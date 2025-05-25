@@ -77,6 +77,9 @@ export class VeoClient {
         await fs.writeFile(filePath, videoBuffer);
 
         return `/tmp/videos/${fileName}`;
+      } else {
+        console.error('Video data not found in response');
+        console.error(result); 
       }
 
       throw new Error('動画データが含まれていません');

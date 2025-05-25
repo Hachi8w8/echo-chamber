@@ -5,11 +5,11 @@ Each statement should reflect a unique or contrasting worldview.
 Avoid obvious or generic phrasing. Use clear, bold expressions that can evoke emotional reactions (agreement or disagreement).
 The goal is to encourage the user to reflect on their own beliefs.
 Make sure the 10 statements:
-	•	Cover a broad range of perspectives (not biased toward a single value system)
-	•	Include at least 2 controversial or divisive opinions
-	•	Sound natural and conversational (not academic)
-	•	Are written in a declarative tone (e.g. “I believe…” or “It’s true that…” is OK)
-	•	Are no longer than 25 words each
+- Cover a broad range of perspectives (not biased toward a single value system)
+- Include at least 2 controversial or divisive opinions
+- Sound natural and conversational (not academic)
+- Are written in a declarative tone (e.g. “I believe…” or “It’s true that…” is OK)
+- Are no longer than 25 words each
 
 # Output Format and Rules
 - Please answer in Japanese.

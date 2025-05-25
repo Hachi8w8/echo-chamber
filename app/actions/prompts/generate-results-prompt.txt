@@ -13,7 +13,7 @@ Use widely understandable and searchable words (e.g., 思考力, 主体性, 教�
 Avoid slang and overly casual language
 Do NOT limit to only positive words — include emotionally complex, thought-provoking, or even slightly uncomfortable keywords if they reflect the user's perspective
 Keywords should help expand the user’s worldview through relevant articles, essays, or learning content
-Output only the keyword list in numbered format (1–10)
+Output only the keyword list
 
 ### perspective
 Based on the user's selected questions, infer their core personal values and write a short description of their worldview in Japanese.
