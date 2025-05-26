@@ -22,5 +22,7 @@
 !/public/videos/sample.mp4
 /tmp/videos/*
 !/tmp/videos/sample.mp4
+!/tmp/videos/error.mp4
+!/tmp/videos/different_value.mp4
 /key/
 /.github/

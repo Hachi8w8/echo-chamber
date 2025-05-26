@@ -27,7 +27,7 @@ export async function generateMovie(
     
     if (AppConfig.AI_STUB_MODE.MOVIE) {
       console.log('【動画生成】スタブモード: サンプル動画を使用');
-      videoPath = '/api/videos/sample.mp4';
+      videoPath = '/api/videos/different_value.mp4';
     } else {
       // Veo2 APIを呼び出し
       const rawPath = await veoClient.generateVideo(prompt, durationSeconds, aspectRatio);

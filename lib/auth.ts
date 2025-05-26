@@ -9,12 +9,29 @@ export class GoogleAuthProvider {
   // シングルトンパターンでインスタンスを取得
   public static getInstance(): GoogleAuth {
     if (!GoogleAuthProvider.instance) {
-      const keyPath = path.join(process.cwd(), 'key', 'sekairoscope-3177be258b29.json');
-      
-      GoogleAuthProvider.instance = new GoogleAuth({
-        keyFile: keyPath,
-        scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-      });
+      const serviceAccountJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+
+      if (serviceAccountJson) {
+        try {
+          // 環境変数から認証情報を使用（Vercel環境など）
+          GoogleAuthProvider.instance = new GoogleAuth({
+            credentials: JSON.parse(serviceAccountJson),
+            scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+          });
+          console.log('Using service account from environment variable');
+        } catch (error) {
+          console.error('環境変数からの認証情報パースエラー:', error);
+          throw error;
+        }
+      } else {
+        // ローカル開発環境用：ファイルから認証情報を使用
+        const keyPath = path.join(process.cwd(), 'key', 'sekairoscope-3177be258b29.json');
+        GoogleAuthProvider.instance = new GoogleAuth({
+          keyFile: keyPath,
+          scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+        });
+        console.log('Using service account from local file');
+      }
     }
     
     return GoogleAuthProvider.instance;
