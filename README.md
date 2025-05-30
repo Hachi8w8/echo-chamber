@@ -31,7 +31,7 @@ echo-chamber/
 │
 ├── types/                    # TypeScript型定義
 │
-├── public/                   # 静的ファイル
+├── tmp/                      # 静的ファイル
 │   └── videos/               # 生成した動画の保存場所
 │
 ├── docs/                     # プロジェクトドキュメント
