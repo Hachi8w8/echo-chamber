@@ -1,3 +1,4 @@
+export const generateResultsPromptTemplate = `
 ## Input
 Theme: {theme}
 User's Values:
@@ -62,3 +63,4 @@ JSON Schema:
 The final response must only contain the JSON object starting with "{" and ending with "}", and no other characters outside the JSON.
 
 JSON:
+`;

@@ -1,9 +1,8 @@
 'use server'
 
 import { geminiClient } from '../../lib/vertex-ai/gemini';
-import * as fs from 'fs';
-import * as path from 'path';
 import { AppConfig } from '../../lib/app-config';
+import { generateValuesPromptTemplate } from './prompts/generate-values-prompt';
 
 /**
  * 選択したテーマに基づいて価値観テキストを生成するServer Action
@@ -24,15 +23,12 @@ export async function generateValuesText(
     }
 
     console.log(`【価値観生成】INPUT: テーマ="${theme}" `);
-    
-    // プロンプトの読み込みと変数置換
+      // プロンプトの読み込みと変数置換
     let prompt;
     if (customPrompt) {
       prompt = customPrompt.replace(/\{theme\}/g, theme);
     } else {
-      const promptPath = path.join(process.cwd(), 'app', 'actions', 'prompts', 'generate-values-prompt.txt');
-      const promptTemplate = fs.readFileSync(promptPath, 'utf8');
-      prompt = promptTemplate.replace(/\{theme\}/g, theme);
+      prompt = generateValuesPromptTemplate.replace(/\{theme\}/g, theme);
     }
       console.log(`【価値観生成】プロンプト: ${prompt}`);
 

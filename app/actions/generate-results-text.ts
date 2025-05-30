@@ -1,9 +1,8 @@
 'use server'
 
 import { geminiClient } from '../../lib/vertex-ai/gemini';
-import * as fs from 'fs';
-import * as path from 'path';
 import { AppConfig } from '../../lib/app-config';
+import { generateResultsPromptTemplate } from './prompts/generate-results-prompt';
 
 /**
  * ユーザーの価値観の型定義
@@ -43,12 +42,8 @@ export async function generateResultsText(
       return { error: '【結果生成】価値観を指定してください' };
     }
 
-    console.log(`【結果生成】INPUT: テーマ="${theme}", 価値観=${JSON.stringify(viewpoints)}`);
-
-    // プロンプトの読み込みと変数置換
-    const promptPath = path.join(process.cwd(), 'app', 'actions', 'prompts', 'generate-results-prompt.txt');
-    const promptTemplate = fs.readFileSync(promptPath, 'utf8');
-    const prompt = promptTemplate
+    console.log(`【結果生成】INPUT: テーマ="${theme}", 価値観=${JSON.stringify(viewpoints)}`);    // プロンプトの読み込みと変数置換
+    const prompt = generateResultsPromptTemplate
       .replace(/\{theme\}/g, theme)
       .replace(/\{viewpoints\}/g, JSON.stringify(viewpoints, null, 2));
     console.log('【結果生成】生成用プロンプト:', prompt);

@@ -1,3 +1,4 @@
+export const generateValuesPromptTemplate = `
 # generation_requirements
 You are a creative question designer for a project called “Sekairoscope,” an app that visualizes different value systems.
 Please generate 10 thought-provoking value-based statements related to the following theme: {theme}.
@@ -31,3 +32,4 @@ JSON Schema:
 The final response must only contain the JSON array starting with "[" and ending with "]", and no other characters outside the JSON.
 
 JSON:
+`;
