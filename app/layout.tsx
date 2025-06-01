@@ -10,7 +10,34 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "セカイロスコープ | 思考バイアス可視化アプリ",
   description: "あなたの情報の偏り、可視化してみませんか？",
-    generator: 'v0.dev'
+  generator: "v0.dev",
+
+  // OGP設定を追加
+  openGraph: {
+    title: "セカイロスコープ | 思考バイアス可視化アプリ",
+    description: "あなたの情報の偏り、可視化してみませんか？",
+    images: [
+      {
+        // 🚧 TODO: 本番時にドメインを変更する
+        url: "https://echo-chamber-ogp-test-only.vercel.app/ogp/thumbnail.png",
+        width: 1200,
+        height: 630,
+        alt: "セカイロスコープ - 思考バイアス可視化アプリ",
+      },
+    ],
+    type: "website",
+    // 🚧 TODO: 本番時にドメインを変更する
+    url: "https://echo-chamber-ogp-test-only.vercel.app/start",
+  },
+
+  // Twitter設定を追加
+  twitter: {
+    card: "summary_large_image",
+    title: "セカイロスコープ | 思考バイアス可視化アプリ",
+    description: "あなたの情報の偏り、可視化してみませんか？",
+    // 🚧 TODO: 本番時にドメインを変更する
+    images: ["https://echo-chamber-ogp-test-only.vercel.app/ogp/thumbnail.png"],
+  },
 }
 
 export default function RootLayout({
