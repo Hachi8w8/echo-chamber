@@ -2,7 +2,7 @@ import { GeminiRequest, GeminiResponse } from '../../types/vertex-ai/gemini';
 import path from 'path';
 import { GoogleAuthProvider } from '../auth';
 
-const PROJECT_ID = 'sekairoscope';
+const PROJECT_ID = process.env.GCP_PROJECT_ID || 'sekairoscope';
 const LOCATION = 'us-central1';
 const MODEL = 'gemini-2.0-flash-lite-001';
 //const MODEL = 'gemini-2.5-pro-preview-05-06';
