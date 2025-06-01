@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { motion } from "framer-motion"
-import { Share2 } from "lucide-react"
+import { Share2, MessageCircle } from "lucide-react"
 import WordCloud from "@/components/feature/word-cloud"
 import VideoPlayer from "@/components/feature/video-player"
 import KeywordModal from "@/components/feature/result/keywordModal"
@@ -147,6 +147,15 @@ export default function ResultPage() {
           </Tabs>
 
           <div className="flex flex-wrap justify-center gap-4 mt-12 pb-10">
+            <Button
+              onClick={() => router.push('/voice-chat')}
+              className={`flex items-center gap-2 rounded-full px-6 py-2 ${
+                activeTab === "user" ? "bg-green-500 text-white hover:bg-green-600" : "bg-green-600 text-white hover:bg-green-700"
+              }`}
+            >
+              <MessageCircle size={18} />
+              AIと音声で対話する
+            </Button>
             <Button
               onClick={handleShare}
               className={`flex items-center gap-2 rounded-full px-6 py-2 ${
