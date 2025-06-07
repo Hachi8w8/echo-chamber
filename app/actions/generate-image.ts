@@ -34,26 +34,27 @@ export async function generateImage(
 
     let imageDataUrl: string;
     let text: string | undefined;
-    
-    if (AppConfig.AI_STUB_MODE.IMAGE) {
+      if (AppConfig.AI_STUB_MODE.IMAGE) {
       console.log('【画像生成】スタブモード: サンプル画像を使用');
       // スタブモードではサンプル画像のパスを返す
       imageDataUrl = '/api/images/sample1.jpg';
       text = undefined; // スタブモードではテキストは返さない
     } else {
       // Image Generation APIを呼び出し
-      const image = await imageGenerationClient.generateImage(prompt, {
+      const result = await imageGenerationClient.generateImage(prompt, {
         temperature: 1,
         maxOutputTokens: 8192,
         topP: 1,
         includeSafetySettings: true
       });
-        // 生成された画像をDataURLに変換
-      imageDataUrl = imageGenerationClient.imageToDataURL(image);
-      text = image.text; // テキストがある場合は取得
+      
+      // パスからファイル名を抽出し、APIルートのパスを生成
+      const filename = result.imagePath.split('/').pop();
+      imageDataUrl = `/api/images/${filename}`;
+      text = result.text; // テキストがある場合は取得 
     }
-    
-    console.log(`【画像生成】OUTPUT: 画像生成完了${text ? `, テキスト: ${text}` : ''}`);
+       
+    console.log(`【画像生成】OUTPUT: 画像生成完了, imageDataUrl: ${imageDataUrl}${text ? `, テキスト: ${text}` : ''}`);
 
     // レスポンスオブジェクトを作成
     const response: GenerateImageResponse = {

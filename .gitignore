@@ -19,8 +19,10 @@
 
 # project specific
 /tmp/videos/*
+/tmp/images/*
 !/tmp/videos/sample.mp4
 !/tmp/videos/error.mp4
 !/tmp/videos/different_value.mp4
+!/tmp/videos/sample1.jpg
 /key/
 /.github/
