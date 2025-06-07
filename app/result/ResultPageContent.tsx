@@ -35,6 +35,8 @@ export default function ResultPageContent() {
   const oppositePerspective = data?.opposite?.perspective || ""
   const userKeywords = data?.user?.keywords || []
   const oppositeKeywords = data?.opposite?.keywords || []
+  const userImageUrl = data?.user?.imageUrl || ""
+  const oppositeImageUrl = data?.opposite?.imageUrl || ""
 
   // タブに応じたスタイルを設定
   const bgColor = activeTab === "user" ? "bg-gray-100" : "bg-gray-900"
@@ -117,6 +119,7 @@ export default function ResultPageContent() {
                     <VideoPlayer videoUrl={userVideoUrl} theme="light" />
                   </CardContent>
                   <p className="px-4 py-6 leading-7">{userPerspective}</p>
+                  <img src={userImageUrl} alt="User Perspective" className="w-full h-auto" />
                 </Card>
 
                 <Card className={`${secondaryBgColor} border-0`}>
@@ -135,6 +138,7 @@ export default function ResultPageContent() {
                     <VideoPlayer videoUrl={oppositeVideoUrl} theme="dark" />
                   </CardContent>
                   <p className="text-white px-4 py-6 leading-7">{oppositePerspective}</p>
+                  <img src={oppositeImageUrl} alt="Opposite Perspective" className="w-full h-auto" />
                 </Card>
 
                 <Card className={`${secondaryBgColor} border-0`}>
