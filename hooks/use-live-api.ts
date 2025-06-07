@@ -4,7 +4,7 @@ import { LiveClientOptions } from "@/types/voice";
 import { AudioStreamer } from "@/lib/voice/audio-streamer";
 import { audioContext } from "@/lib/voice/utils";
 import VolMeterWorket from "@/lib/voice/worklets/vol-meter";
-import { LiveConnectConfig, Modality } from "@google/genai";
+import { LiveConnectConfig, Modality, MediaResolution } from "@google/genai";
 
 export type UseLiveAPIResults = {
   client: GenAILiveClient;
@@ -22,17 +22,22 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
   const client = useMemo(() => new GenAILiveClient(options), [options]);
   const audioStreamerRef = useRef<AudioStreamer | null>(null);
 
-  const [model, setModel] = useState<string>("models/gemini-2.0-flash-exp");
+  const [model, setModel] = useState<string>("models/gemini-2.5-flash-preview-native-audio-dialog");
   const [config, setConfig] = useState<LiveConnectConfig>({
     responseModalities: [Modality.AUDIO],
+    mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
     speechConfig: {
-      languageCode: "ja-JP"
+      languageCode: "ja-JP",
+      voiceConfig: {
+        prebuiltVoiceConfig: {
+          voiceName: "Zephyr",
+        },
+      },
     },
-    systemInstruction: {
-      parts: [{
-        text: "あなたは議論好きな日本人です。ユーザーと異なる視点で建設的な議論を行ってください。必ず日本語のみで答えてください。回答は1文か2文以内で簡潔に。"
-      }]
-    }
+    contextWindowCompression: {
+      triggerTokens: "25600",
+      slidingWindow: { targetTokens: "12800" },
+    },
   });
   const [connected, setConnected] = useState(false);
   const [volume, setVolume] = useState(0);
@@ -94,7 +99,7 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
       throw new Error("config has not been set");
     }
     client.disconnect();
-    await client.connect(model, config);
+      await client.connect(model, config);
   }, [client, config, model]);
 
   const disconnect = useCallback(async () => {

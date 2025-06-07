@@ -83,13 +83,21 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
   }
 
   async connect(model: string, config: LiveConnectConfig): Promise<boolean> {
+    console.log("🚀 GenAILiveClient.connect開始");
+    console.log("📱 ステータス:", this._status);
+    
     if (this._status === "connected" || this._status === "connecting") {
+      console.log("⚠️ 既に接続中または接続済み、スキップ");
       return false;
     }
 
     this._status = "connecting";
     this.config = config;
     this._model = model;
+    
+    console.log("🔧 接続設定:");
+    console.log("  - model:", model);
+    console.log("  - config:", JSON.stringify(config, null, 2));
 
     const callbacks: LiveCallbacks = {
       onopen: this.onopen,
@@ -99,18 +107,26 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
     };
 
     try {
+      console.log("📡 GoogleGenAI.live.connect実行中...");
       this._session = await this.client.live.connect({
         model,
         config,
         callbacks,
       });
+      console.log("🎉 GoogleGenAI.live.connect成功");
     } catch (e) {
-      console.error("Error connecting to GenAI Live:", e);
+      console.error("💥 GoogleGenAI.live.connectエラー:", e);
+      console.error("エラー詳細:", {
+        name: e instanceof Error ? e.name : 'Unknown',
+        message: e instanceof Error ? e.message : String(e),
+        stack: e instanceof Error ? e.stack : undefined
+      });
       this._status = "disconnected";
       return false;
     }
 
     this._status = "connected";
+    console.log("✨ GenAILiveClient接続完了");
     return true;
   }
 
@@ -145,17 +161,27 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
   }
 
   protected async onmessage(message: LiveServerMessage) {
+    console.log("📨 サーバーメッセージ受信:", {
+      setupComplete: !!message.setupComplete,
+      toolCall: !!message.toolCall,
+      toolCallCancellation: !!message.toolCallCancellation,
+      serverContent: !!message.serverContent
+    });
+    
     if (message.setupComplete) {
+      console.log("⚙️ セットアップ完了");
       this.log("server.send", "setupComplete");
       this.emit("setupcomplete");
       return;
     }
     if (message.toolCall) {
+      console.log("🔧 ツールコール受信");
       this.log("server.toolCall", message);
       this.emit("toolcall", message.toolCall);
       return;
     }
     if (message.toolCallCancellation) {
+      console.log("❌ ツールコールキャンセル");
       this.log("server.toolCallCancellation", message);
       this.emit("toolcallcancellation", message.toolCallCancellation);
       return;
@@ -163,36 +189,50 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
 
     if (message.serverContent) {
       const { serverContent } = message;
+      console.log("📝 サーバーコンテンツ:", {
+        interrupted: "interrupted" in serverContent,
+        turnComplete: "turnComplete" in serverContent,
+        modelTurn: "modelTurn" in serverContent
+      });
+      
       if ("interrupted" in serverContent) {
+        console.log("⏸️ 会話中断");
         this.log("server.content", "interrupted");
         this.emit("interrupted");
         return;
       }
       if ("turnComplete" in serverContent) {
+        console.log("✅ ターン完了");
         this.log("server.content", "turnComplete");
         this.emit("turncomplete");
       }
 
       if ("modelTurn" in serverContent) {
+        console.log("🤖 モデルターン開始");
         let parts: Part[] = serverContent.modelTurn?.parts || [];
+        console.log("📦 パーツ数:", parts.length);
 
         // when its audio that is returned for modelTurn
         const audioParts = parts.filter(
           (p) => p.inlineData && p.inlineData.mimeType?.startsWith("audio/pcm")
         );
         const base64s = audioParts.map((p) => p.inlineData?.data);
+        console.log("🔊 オーディオパーツ数:", audioParts.length);
 
         // strip the audio parts out of the modelTurn
         const otherParts = parts.filter(part => !audioParts.includes(part));
+        console.log("📄 その他パーツ数:", otherParts.length);
 
         base64s.forEach((b64) => {
           if (b64) {
             const data = base64ToArrayBuffer(b64);
             this.emit("audio", data);
             this.log(`server.audio`, `buffer (${data.byteLength})`);
+            console.log("🎵 オーディオデータ送信:", data.byteLength, "bytes");
           }
         });
         if (!otherParts.length) {
+          console.log("📭 オーディオのみのため、コンテンツイベントなし");
           return;
         }
 
@@ -201,9 +241,10 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
         const content: { modelTurn: Content } = { modelTurn: { parts } };
         this.emit("content", content);
         this.log(`server.content`, message);
+        console.log("📤 コンテンツイベント送信");
       }
     } else {
-      console.log("received unmatched message", message);
+      console.log("❓ 未対応メッセージ:", message);
     }
   }
 
