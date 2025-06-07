@@ -5,6 +5,7 @@ type ResultData = {
   keywords: string[]
   perspective: string
   videoUrl: string
+  imageUrl: string
 }
 
 type Results = {
