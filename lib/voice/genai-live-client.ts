@@ -116,11 +116,35 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
       console.log("🎉 GoogleGenAI.live.connect成功");
     } catch (e) {
       console.error("💥 GoogleGenAI.live.connectエラー:", e);
-      console.error("エラー詳細:", {
+      
+      // エラーの詳細分析
+      const errorInfo = {
         name: e instanceof Error ? e.name : 'Unknown',
         message: e instanceof Error ? e.message : String(e),
-        stack: e instanceof Error ? e.stack : undefined
-      });
+        stack: e instanceof Error ? e.stack : undefined,
+        model: model,
+        timestamp: new Date().toISOString()
+      };
+      
+      console.error("🔍 エラー詳細分析:", errorInfo);
+      
+      // レートリミットの検出
+      if (e instanceof Error && e.message) {
+        const msg = e.message.toLowerCase();
+        if (msg.includes('rate') || msg.includes('limit') || msg.includes('quota')) {
+          console.error("🚫 レートリミット/クォータエラーの可能性:", e.message);
+        }
+        if (msg.includes('429')) {
+          console.error("🚫 HTTP 429 Too Many Requests エラー");
+        }
+        if (msg.includes('model') || msg.includes('not found') || msg.includes('invalid')) {
+          console.error("🚫 モデル関連エラーの可能性:", e.message);
+        }
+        if (msg.includes('auth') || msg.includes('api key') || msg.includes('permission')) {
+          console.error("🚫 認証/APIキーエラーの可能性:", e.message);
+        }
+      }
+      
       this._status = "disconnected";
       return false;
     }
@@ -148,11 +172,38 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
   }
 
   protected onerror(e: ErrorEvent) {
+    console.error("🌐 WebSocketエラー:", {
+      type: e.type,
+      message: e.message,
+      filename: e.filename,
+      lineno: e.lineno,
+      colno: e.colno,
+      timestamp: new Date().toISOString()
+    });
+    
     this.log("server.error", e.message);
     this.emit("error", e);
   }
 
   protected onclose(e: CloseEvent) {
+    console.log("🔌 WebSocket接続終了:", {
+      code: e.code,
+      reason: e.reason,
+      wasClean: e.wasClean,
+      timestamp: new Date().toISOString()
+    });
+    
+    // WebSocketクローズコードの解析
+    if (e.code === 1008) {
+      console.error("🚫 WebSocket Policy Violation (1008) - APIエラーの可能性");
+    } else if (e.code === 1011) {
+      console.error("🚫 WebSocket Unexpected Condition (1011) - サーバーエラー");
+    } else if (e.code === 1012) {
+      console.error("🚫 WebSocket Service Restart (1012) - サーバー再起動");
+    } else if (e.code === 1013) {
+      console.error("🚫 WebSocket Try Again Later (1013) - 一時的な過負荷");
+    }
+    
     this.log(
       `server.close`,
       `disconnected ${e.reason ? `with reason: ${e.reason}` : ``}`

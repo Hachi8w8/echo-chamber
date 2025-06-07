@@ -98,8 +98,16 @@ export function useLiveAPI(options: LiveClientOptions): UseLiveAPIResults {
     if (!config) {
       throw new Error("config has not been set");
     }
+    
+    console.log("🤖 使用モデル:", model);
+    console.log("⚙️ 接続設定:", {
+      responseModalities: config.responseModalities,
+      languageCode: config.speechConfig?.languageCode,
+      voiceName: config.speechConfig?.voiceConfig?.prebuiltVoiceConfig?.voiceName
+    });
+    
     client.disconnect();
-      await client.connect(model, config);
+    await client.connect(model, config);
   }, [client, config, model]);
 
   const disconnect = useCallback(async () => {

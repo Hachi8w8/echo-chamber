@@ -35,7 +35,7 @@ const DEFAULT_SYSTEM_PROMPT = `あなたは建設的な議論を好む日本人�
 まずはユーザーに挨拶して、どのようなテーマについて話したいか聞いてください。`;
 
 export default function VoiceChatTestPage() {
-  const [promptText, setPromptText] = useState(DEFAULT_SYSTEM_PROMPT);
+  const [promptText, setPromptText] = useState('');
 
   const {
     client,
