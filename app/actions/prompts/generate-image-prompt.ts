@@ -1,14 +1,14 @@
 export const generateImagePromptTemplate = `
-# Instructions
-Using ONLY the text provided in the <World Setting> below as your source of information, create a single character that **lives in** that world setting and generate an image of that character.
-
-# Absolute Rules
-- **Strict Subject Matter**: The generated image must **NEVER** be a landscape, an object, or an abstract scene. The subject must **ALWAYS** be a **single character**.
-- **Composition**: The character's **upper body or full body** must be depicted prominently in the center of the image. The character must be the main subject and occupy the majority of the frame.
-- **Background**: Do not draw a background. The background must be **white or transparent**. Prioritizing making the character stand out is the highest priority.
-- **Interpretation**: Use the <World Setting> **only** as inspiration to determine the character's **design (appearance, clothing, equipment, etc.)** and **atmosphere**. Even if the text describes a landscape, you must absolutely not draw that landscape.
-
-# Input Information
-- **<World Setting>**:
+Your task is to create a single character image suitable for an avatar. The character must be a resident of the world defined in the following <Worldview Setting>:
 {worldviewDescription}
+
+Follow these guidelines:
+- **Strict Subject Matter**: The generated image must never be a landscape, an object, or an abstract scene. The subject must always be a single character.
+- **Interpretation**: Use the <Worldview Setting> as inspiration for determining the character's design (appearance, clothing, equipment, etc.) and atmosphere. Even if the text describes a landscape, never draw a landscape.
+- **Composition**: The character must be the main subject, occupying over 80% of the image. Use a full-body or upper-body shot.
+- **Style**: Define and apply an art style (e.g., fantasy, sci-fi, surreal, photorealistic, cel-shaded, vaporwave, whimsical, dark fantasy, utopian, dystopian, etc.) that matches the <Worldview Setting>.
+- **Pose**: Create a dynamic and engaging pose for the character.
+- **Background**: Use a simple and clean background that complements the character without distracting from them.
+- **Color Palette**: Apply a color palette that matches the <Worldview Setting>.
+- **Lighting**: Apply lighting conditions that enhance the character's form and create visual interest.
 `;
