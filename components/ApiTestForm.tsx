@@ -6,6 +6,7 @@ import { generateMovie } from '../app/actions/generate-movie';
 import { getPromptTemplate } from '../app/actions/get-prompt-template';
 import { generateMoviePrompt, Viewpoint } from '../app/actions/generate-movie-prompt-text';
 import { generateResultsText } from '../app/actions/generate-results-text';
+import { generateImage } from '../app/actions/generate-image';
 
 export default function ApiTestForm() {
   // テキスト生成用の状態
@@ -51,12 +52,13 @@ export default function ApiTestForm() {
   const [resultsViewpoints, setResultsViewpoints] = useState<Viewpoint[]>(initialViewpoints);
   const [keywords, setKeywords] = useState<string[]>([]);
   const [perspective, setPerspective] = useState('');
-  
-  // 動画生成用の状態
+    // 動画生成用の状態
   const [prompt, setPrompt] = useState(`A whimsical 3D world floating in soft pink and lavender skies, with several cozy floating islands connected by glowing heart-shaped bridges. Each island represents a different aspect of family values. One island shows two characters far apart, yet connected by a glowing thread of light between their hearts. Another has a picnic scene where everyone is sitting freely, without fixed seats or roles, enjoying each other's presence. A third island has a giant ear-shaped sculpture surrounded by bubbles with dialogue icons, symbolizing listening and conversation. One area displays a playful, upside-down house with a sign that says "normal?"—questioning traditional ideas of family. The whole world is surrounded by floating pillows, blankets, and twinkling stars, creating a warm, relaxed atmosphere. No harsh lines, everything is soft, round, and magical.`);
-  const [videoLength, setVideoLength] = useState('5');
-  const [aspectRatio, setAspectRatio] = useState('16:9');
-  const [videoPath, setVideoPath] = useState<string>('');
+  const [videoLength, setVideoLength] = useState('5');  const [aspectRatio, setAspectRatio] = useState('16:9');
+  const [videoPath, setVideoPath] = useState<string>('');    // Gemini画像生成用の状態
+  const [geminiImagePrompt, setGeminiImagePrompt] = useState('A futuristic cityscape at sunset with flying cars and neon lights');
+  const [geminiImageDataUrl, setGeminiImageDataUrl] = useState<string>('');
+  const [geminiImageText, setGeminiImageText] = useState<string>('');
   
   // 共通の状態
   const [error, setError] = useState<string>('');
@@ -133,6 +135,8 @@ export default function ApiTestForm() {
         setMoviePromptResult(response.movieGenerationPrompt);
         // 生成したプロンプトを動画生成用のプロンプトにセット
         setPrompt(response.movieGenerationPrompt);
+        // 生成したプロンプトをGemini画像生成用のプロンプトにもセット
+        setGeminiImagePrompt(response.movieGenerationPrompt);
       }
     } catch (err) {
       setError('エラーが発生しました');
@@ -170,7 +174,6 @@ export default function ApiTestForm() {
       setIsLoading(false);
     }
   };
-
   // 動画生成のハンドラ
   const handleMovieGeneration = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,6 +191,29 @@ export default function ApiTestForm() {
         setError(response.error);
       } else {
         setVideoPath(response.videoPath);
+      }
+    } catch (err) {
+      setError('エラーが発生しました');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }  };  // Gemini画像生成のハンドラ
+  const handleImageGeneration = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+    setGeminiImageDataUrl('');
+    setGeminiImageText('');
+
+    try {
+      const response = await generateImage(geminiImagePrompt);
+      if ('error' in response) {
+        setError(response.error);
+      } else {
+        setGeminiImageDataUrl(response.imageDataUrl);
+        if (response.text) {
+          setGeminiImageText(response.text);
+        }
       }
     } catch (err) {
       setError('エラーが発生しました');
@@ -590,9 +616,7 @@ export default function ApiTestForm() {
           >
             {isLoading ? '生成中...' : '動画生成'}
           </button>
-        </form>
-
-        {videoPath && (
+        </form>        {videoPath && (
           <div className="mt-4">
             <h3 className="text-xl font-bold mb-2">生成結果:</h3>
             <video
@@ -603,6 +627,61 @@ export default function ApiTestForm() {
             >
               お使いのブラウザは動画の再生に対応していません。
             </video>
+          </div>
+        )}      </div>
+
+      {/* 画像生成フォーム */}
+      <div className="border p-4 rounded">
+        <h2 className="text-2xl font-bold mb-4">画像生成API テスト</h2>
+        <form onSubmit={handleImageGeneration} className="space-y-4">
+          <div>
+            <label className="block mb-2">
+              プロンプト:
+            </label>
+            <textarea
+              value={geminiImagePrompt}
+              onChange={(e) => setGeminiImagePrompt(e.target.value)}
+              rows={4}
+              className="w-full p-2 border rounded"
+              placeholder="画像生成のプロンプトを入力してください"
+            />
+          </div>
+
+          <div className="text-sm text-gray-600 bg-gray-100 p-3 rounded">
+            <p><strong>固定パラメータ:</strong></p>
+            <ul className="list-disc list-inside mt-1">
+              <li>Temperature: 1</li>
+              <li>Max Output Tokens: 8192</li>
+              <li>Top P: 1</li>
+              <li>Safety Settings: すべてOFF</li>
+            </ul>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading || !geminiImagePrompt.trim()}
+            className="px-4 py-2 bg-green-500 text-white rounded disabled:bg-gray-400"
+          >
+            {isLoading ? '生成中...' : '画像生成'}
+          </button>
+        </form>        {geminiImageDataUrl && (
+          <div className="mt-4">
+            <h3 className="text-xl font-bold mb-2">生成結果:</h3>
+            <div className="border rounded p-2">
+              <img
+                src={geminiImageDataUrl}
+                alt="Gemini generated image"
+                className="w-full h-auto rounded"
+                style={{ maxWidth: '400px' }}
+              />
+              <p className="text-sm text-gray-600 mt-2">生成された画像</p>
+              {geminiImageText && (
+                <div className="mt-3 p-3 bg-gray-50 rounded">
+                  <h4 className="text-sm font-semibold mb-1">生成されたテキスト:</h4>
+                  <p className="text-sm">{geminiImageText}</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
