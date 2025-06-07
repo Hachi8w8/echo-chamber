@@ -37,7 +37,7 @@ export async function generateImage(
       if (AppConfig.AI_STUB_MODE.IMAGE) {
       console.log('【画像生成】スタブモード: サンプル画像を使用');
       // スタブモードではサンプル画像のパスを返す
-      imageDataUrl = '/api/images/sample1.jpg';
+      imageDataUrl = '/api/images/sample1.png';
       text = undefined; // スタブモードではテキストは返さない
     } else {
       // Image Generation APIを呼び出し

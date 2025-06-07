@@ -1,18 +1,14 @@
 export const generateImagePromptTemplate = `
 # Instructions
-Primary Goal: Generate an Image
-Your only task is to generate one image. Do not write any text, descriptions, or explanations. Your entire output must be the image file.
+Using ONLY the text provided in the <World Setting> below as your source of information, create a single character that **lives in** that world setting and generate an image of that character.
 
-Image Content:
-Generate a single, standalone character avatar.
-This character must be designed as if they are an inhabitant of the world detailed in the {Worldview Description} below.
-The character's appearance, clothing, and overall style must be a direct reflection of the themes, aesthetics, and mood of that specific world.
-The avatar should prominently feature the character, with the character taking up a significant portion of the image frame.
-Image Specifications:
+# Absolute Rules
+- **Strict Subject Matter**: The generated image must **NEVER** be a landscape, an object, or an abstract scene. The subject must **ALWAYS** be a **single character**.
+- **Composition**: The character's **upper body or full body** must be depicted prominently in the center of the image. The character must be the main subject and occupy the majority of the frame.
+- **Background**: Do not draw a background. The background must be **white or transparent**. Prioritizing making the character stand out is the highest priority.
+- **Interpretation**: Use the <World Setting> **only** as inspiration to determine the character's **design (appearance, clothing, equipment, etc.)** and **atmosphere**. Even if the text describes a landscape, you must absolutely not draw that landscape.
 
-Focus: The character must be the clear and dominant focus of the image.
-Composition Suggestion: Consider a close-up or medium shot of the character to ensure they are the primary visual element. The background should be simple or blurred to further emphasize the character.
-
-# Worldview Description
+# Input Information
+- **<World Setting>**:
 {worldviewDescription}
 `;
