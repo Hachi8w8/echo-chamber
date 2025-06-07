@@ -8,9 +8,9 @@ export const AppConfig = {
    * false: 本番用 AI APIを使用
    */
   AI_STUB_MODE: {
-    VALUES_TEXT: false,  // 価値観テキスト生成
+    VALUES_TEXT: true,  // 価値観テキスト生成
     MOVIE_PROMPT: true, // ムービープロンプト生成
     MOVIE: true,        // ムービー生成
-    RESULTS: false,      // 結果テキスト生成
+    RESULTS: true,      // 結果テキスト生成
   },
 };
