@@ -4,6 +4,8 @@ import {
   GeneratedImage 
 } from '../../types/vertex-ai/image';
 import { GoogleAuthProvider } from '../auth';
+import * as fs from 'fs-extra';
+import path from 'path';
 
 const PROJECT_ID = process.env.GCP_PROJECT_ID || 'sekairoscope';
 const LOCATION = 'global';
@@ -14,9 +16,8 @@ const API_ENDPOINT = `https://aiplatform.googleapis.com/v1/projects/${PROJECT_ID
  * Gemini 2.0 Flash Preview Image Generation APIクライアント
  */
 export class ImageGenerationClient {
-  constructor() {}
-  /**
-   * テキストプロンプトから画像を生成する
+  constructor() {}  /**
+   * テキストプロンプトから画像を生成し、tmpディレクトリに保存する
    */
   async generateImage(
     prompt: string,
@@ -26,7 +27,7 @@ export class ImageGenerationClient {
       topP?: number;
       includeSafetySettings?: boolean;
     }
-  ): Promise<GeneratedImage> {
+  ): Promise<{ imagePath: string; text?: string }> {
     try {
       console.log('Authenticating with GCP...');
       const token = await GoogleAuthProvider.getAccessToken();
@@ -139,8 +140,7 @@ export class ImageGenerationClient {
         
         // レスポンスが配列の場合と単一オブジェクトの場合を処理
         const responseArray = Array.isArray(responseData) ? responseData : [responseData];
-        
-        // 全てのテキストと画像データを収集
+          // 全てのテキストと画像データを収集
         let allTextParts: string[] = [];
         let imageData: { data: string; mimeType: string } | null = null;
         
@@ -194,31 +194,45 @@ export class ImageGenerationClient {
           }
           
           console.log('=== End Response ===');
-        }
+        }        
 
         // 画像データの確認
         if (!imageData) {
           throw new Error('画像データが見つかりませんでした');
-        }        // テキストを結合
+        }
+
+        // 画像データをファイルに保存
+        const validImageData = imageData as { data: string; mimeType: string };
+        const imageBuffer = Buffer.from(validImageData.data, 'base64');
+        
+        // ファイル名の生成（拡張子はmimeTypeから判定）
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const extension = validImageData.mimeType.includes('png') ? 'png' : 'jpg';
+        const fileName = `image_${timestamp}.${extension}`;
+
+        // tmpディレクトリに保存
+        const outputDir = path.join(process.cwd(), 'tmp', 'images');
+        await fs.ensureDir(outputDir);
+        const filePath = path.join(outputDir, fileName);
+        await fs.writeFile(filePath, imageBuffer);
+
+        // テキストを結合
         const combinedText = allTextParts.join('').trim();
         
         // 結果を作成
-        const result: GeneratedImage = {
-          data: (imageData as any).data,
-          mimeType: (imageData as any).mimeType
+        const result: { imagePath: string; text?: string } = {
+          imagePath: `/tmp/images/${fileName}`
         };
         
         if (combinedText) {
           result.text = combinedText;
         }
-        
-        foundImage = result;
 
-        console.log('Successfully generated 1 image');
+        console.log('Successfully generated and saved 1 image:', result.imagePath);
         if (combinedText) {
           console.log(`Combined text: ${combinedText.substring(0, 100)}${combinedText.length > 100 ? '...' : ''}`);
         }
-        return foundImage;
+        return result;
 
       } catch (parseError) {
         console.error('Response parsing error:', parseError);
