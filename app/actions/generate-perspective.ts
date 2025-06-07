@@ -1,21 +1,23 @@
 // app/actions/generate-perspective.ts
-'use server'
-
+'use server';
 import { generateMoviePrompt } from './generate-movie-prompt-text';
 import { generateMovie } from './generate-movie';
 import { generateResultsText } from './generate-results-text';
 import type { SwipeAnswer } from '@/lib/hooks/useCardSwipe';
+import { generateImage } from './generate-image';
 
 type GeneratePerspectiveResponse = {
   user: {
     keywords: string[];
     perspective: string;
     videoUrl: string;
+    imageUrl: string;
   };
   opposite: {
     keywords: string[];
     perspective: string;
     videoUrl: string;
+    imageUrl: string;
   };
 };
 
@@ -25,36 +27,41 @@ export async function generatePerspective(
 ): Promise<GeneratePerspectiveResponse | { error: string }> {
   try {
     // 反対の回答を作成
-    const oppositeAnswers = answers.map(a => ({ ...a, resonates: !a.resonates }));
+    const oppositeAnswers = answers.map((a) => ({ ...a, resonates: !a.resonates }));
 
-    // 映画生成プロセスの定義
-    const generateMovieProcess = async (answers: SwipeAnswer[]) => {
-      // 映画生成のプロンプトを取得
+    // 映画生成と画像生成プロセスの定義
+    const generateMediaProcess = async (answers: SwipeAnswer[]) => {
+      // 映画生成と画像生成のプロンプトを取得
       const promptResult = await generateMoviePrompt(theme, answers);
-      
+
       if ('error' in promptResult) {
         throw new Error(promptResult.error);
       }
-      
-      // 動画生成
-      const videoResult = await generateMovie(promptResult.movieGenerationPrompt);
-      
+
+      // 同じプロンプトで動画と画像を並列生成
+      const [videoResult, imageResult] = await Promise.all([
+        generateMovie(promptResult.movieGenerationPrompt),
+        generateImage(promptResult.movieGenerationPrompt),
+      ]);
+
       if ('error' in videoResult) {
         throw new Error(videoResult.error);
       }
-      
-      return videoResult.videoPath;
+
+      if ('error' in imageResult) {
+        throw new Error(imageResult.error);
+      }
+
+      return {
+        videoUrl: videoResult.videoPath,
+        imageUrl: imageResult.imageDataUrl,
+      };
     };
 
     // すべての処理を並列化
-    const [
-      userVideoURL,
-      oppositeVideURL,
-      userKeywordsResult,
-      oppositeKeywordsResult,
-    ] = await Promise.all([
-      generateMovieProcess(answers),
-      generateMovieProcess(oppositeAnswers),
+    const [userMediaResult, oppositeMediaResult, userKeywordsResult, oppositeKeywordsResult] = await Promise.all([
+      generateMediaProcess(answers),
+      generateMediaProcess(oppositeAnswers),
       generateResultsText(theme, answers),
       generateResultsText(theme, oppositeAnswers),
     ]);
@@ -72,20 +79,23 @@ export async function generatePerspective(
       user: {
         keywords: userKeywordsResult.keywords,
         perspective: userKeywordsResult.perspective,
-        videoUrl: userVideoURL
+        videoUrl: userMediaResult.videoUrl,
+        imageUrl: userMediaResult.imageUrl,
       },
       opposite: {
         keywords: oppositeKeywordsResult.keywords,
         perspective: oppositeKeywordsResult.perspective,
-        videoUrl: oppositeVideURL
-      }
+        videoUrl: oppositeMediaResult.videoUrl,
+        imageUrl: oppositeMediaResult.imageUrl,
+      },
     };
   } catch (error) {
     console.error(`【視点生成】エラー発生: ${error}`);
     return {
-      error: error instanceof Error 
-        ? `視点生成中にエラーが発生しました: ${error.message}` 
-        : '視点生成中に不明なエラーが発生しました'
+      error:
+        error instanceof Error
+          ? `視点生成中にエラーが発生しました: ${error.message}`
+          : '視点生成中に不明なエラーが発生しました',
     };
   }
 }
