@@ -35,8 +35,7 @@ const DEFAULT_SYSTEM_PROMPT = `あなたは建設的な議論を好む日本人�
 まずはユーザーに挨拶して、どのようなテーマについて話したいか聞いてください。`;
 
 export default function VoiceChatTestPage() {
-  const [systemPrompt, setSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
-  const [isConfigured, setIsConfigured] = useState(false);
+  const [promptText, setPromptText] = useState(DEFAULT_SYSTEM_PROMPT);
 
   const {
     client,
@@ -49,8 +48,10 @@ export default function VoiceChatTestPage() {
     volume,
   } = useLiveAPI(apiOptions);
 
-  const handleSetPrompt = () => {
-    const config: LiveConnectConfig = {
+  const handleConnect = async () => {
+    console.log("🔗 Live API connect開始");
+    
+    const latestConfig: LiveConnectConfig = {
       responseModalities: [Modality.AUDIO],
       mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
       speechConfig: {
@@ -66,19 +67,25 @@ export default function VoiceChatTestPage() {
         slidingWindow: { targetTokens: "12800" },
       },
       systemInstruction: {
-        parts: [{
-          text: systemPrompt
-        }]
+        parts: [{ text: promptText }]
       }
     };
-
-    setConfig(config);
-    setIsConfigured(true);
+    
+    console.log("📋 使用するconfig:", JSON.stringify(latestConfig, null, 2));
+    console.log("🤖 使用するmodel:", model);
+    
+    try {
+      console.log("📞 API接続を開始...");
+      setConfig(latestConfig);
+      await connect();
+      console.log("✅ API接続成功");
+    } catch (error) {
+      console.error("💥 API接続エラー:", error);
+    }
   };
 
   const handleReset = () => {
-    setSystemPrompt(DEFAULT_SYSTEM_PROMPT);
-    setIsConfigured(false);
+    setPromptText(DEFAULT_SYSTEM_PROMPT);
   };
 
   return (
@@ -131,63 +138,45 @@ export default function VoiceChatTestPage() {
             </div>
             
             <textarea
-              value={systemPrompt}
-              onChange={(e) => setSystemPrompt(e.target.value)}
+              value={promptText}
+              onChange={(e) => setPromptText(e.target.value)}
               placeholder="システムプロンプトを入力してください..."
               className="w-full min-h-[400px] font-mono text-sm mb-4 p-3 border border-gray-300 rounded-lg resize-vertical focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             
-            <Button
-              onClick={handleSetPrompt}
-              className="w-full"
-              disabled={!systemPrompt.trim()}
-            >
-              このプロンプトで設定
-            </Button>
-            
-            {isConfigured && (
-              <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-sm text-green-800">
-                  ✅ プロンプトが設定されました。「接続」ボタンで音声対話を開始できます。
-                </p>
-              </div>
-            )}
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-4">
+                テキストエリアでプロンプトを編集して、「接続」ボタンで音声対話を開始
+              </p>
+            </div>
           </div>
 
           {/* 音声対話エリア */}
           <div className="bg-white rounded-xl shadow-lg p-6">
             <h2 className="text-xl font-bold mb-4">音声対話テスト</h2>
             
-            {!isConfigured ? (
-              <div className="text-center py-20">
-                <p className="text-gray-500 mb-4">まずはシステムプロンプトを設定してください</p>
+            {/* 接続状態表示 */}
+            <div className="text-center mb-6">
+              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
+                connected 
+                  ? "bg-green-100 text-green-800" 
+                  : "bg-gray-100 text-gray-600"
+              }`}>
+                <div className={`w-3 h-3 rounded-full ${
+                  connected ? "bg-green-500" : "bg-gray-400"
+                }`}></div>
+                {connected ? "AIに接続中" : "未接続"}
               </div>
-            ) : (
-              <>
-                {/* 接続状態表示 */}
-                <div className="text-center mb-6">
-                  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
-                    connected 
-                      ? "bg-green-100 text-green-800" 
-                      : "bg-gray-100 text-gray-600"
-                  }`}>
-                    <div className={`w-3 h-3 rounded-full ${
-                      connected ? "bg-green-500" : "bg-gray-400"
-                    }`}></div>
-                    {connected ? "AIに接続中" : "未接続"}
-                  </div>
-                </div>
+            </div>
 
-                {/* コントロール */}
-                <VoiceControls
-                  connected={connected}
-                  connect={connect}
-                  disconnect={disconnect}
-                  client={client}
-                  volume={volume}
-                />
-              </>
-            )}
+            {/* コントロール */}
+            <VoiceControls
+              connected={connected}
+              connect={handleConnect}
+              disconnect={disconnect}
+              client={client}
+              volume={volume}
+            />
           </div>
         </div>
 
@@ -199,7 +188,7 @@ export default function VoiceChatTestPage() {
               <h4 className="font-semibold mb-2">基本的な流れ</h4>
               <ol className="space-y-2 text-sm text-gray-700">
                 <li>1. システムプロンプトを編集</li>
-                <li>2. 「このプロンプトで設定」をクリック</li>
+                <li>2. モデルを選択（任意）</li>
                 <li>3. 「接続」ボタンでAIに接続</li>
                 <li>4. マイクを有効にして対話開始</li>
               </ol>
@@ -207,9 +196,9 @@ export default function VoiceChatTestPage() {
             <div>
               <h4 className="font-semibold mb-2">注意点</h4>
               <ul className="space-y-2 text-sm text-gray-700">
-                <li>• プロンプト変更時は再設定が必要</li>
+                <li>• 接続時に最新のプロンプトが適用されます</li>
                 <li>• 日本語での指示を推奨</li>
-                <li>• 接続前にプロンプトを設定</li>
+                <li>• 接続中はモデル切り替え不可</li>
                 <li>• 音量レベルを確認してください</li>
               </ul>
             </div>
