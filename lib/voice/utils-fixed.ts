@@ -117,4 +117,4 @@ export function base64ToArrayBuffer(base64: string) {
     bytes[i] = binaryString.charCodeAt(i);
   }
   return bytes.buffer;
-} 
+}

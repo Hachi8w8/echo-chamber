@@ -113,7 +113,7 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
         config,
         callbacks,
       });
-      console.log("🎉 GoogleGenAI.live.connect成功");
+      console.log("🎉 GoogleGenAI.live.connect成功", this._session);
     } catch (e) {
       console.error("💥 GoogleGenAI.live.connectエラー:", e);
       
@@ -167,32 +167,19 @@ export class GenAILiveClient extends EventEmitter<LiveClientEventTypes> {
   }
 
   protected onopen() {
+    console.log('[GenAILiveClient] onopen発火');
     this.log("client.open", "Connected");
     this.emit("open");
   }
 
   protected onerror(e: ErrorEvent) {
-    console.error("🌐 WebSocketエラー:", {
-      type: e.type,
-      message: e.message,
-      filename: e.filename,
-      lineno: e.lineno,
-      colno: e.colno,
-      timestamp: new Date().toISOString()
-    });
-    
+    console.error('[GenAILiveClient] onerror発火', e);
     this.log("server.error", e.message);
     this.emit("error", e);
   }
 
   protected onclose(e: CloseEvent) {
-    console.log("🔌 WebSocket接続終了:", {
-      code: e.code,
-      reason: e.reason,
-      wasClean: e.wasClean,
-      timestamp: new Date().toISOString()
-    });
-    
+    console.log('[GenAILiveClient] onclose発火', e);
     // WebSocketクローズコードの解析
     if (e.code === 1008) {
       console.error("🚫 WebSocket Policy Violation (1008) - APIエラーの可能性");

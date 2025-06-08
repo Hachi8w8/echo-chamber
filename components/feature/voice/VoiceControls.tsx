@@ -2,10 +2,11 @@
 
 import { memo, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Mic, MicOff, Volume2, VolumeX } from "lucide-react";
+import { Mic, MicOff } from "lucide-react";
 import { AudioRecorder } from "@/lib/voice/audio-recorder";
 import DebugConsole from "./DebugConsole";
 import classNames from "classnames";
+import { isDev } from "@/lib/env";
 
 export type VoiceControlsProps = {
   connected: boolean;
@@ -25,10 +26,13 @@ function VoiceControls({
   onInVolume,
 }: VoiceControlsProps) {
   const [inVolume, setInVolume] = useState(0);
+  const latestVolume = useRef(0);
   const [audioRecorder] = useState(() => new AudioRecorder());
   const [showDebugConsole, setShowDebugConsole] = useState(false);
   const [quotaError, setQuotaError] = useState<string | null>(null);
   const connectButtonRef = useRef<HTMLButtonElement>(null);
+
+
 
   useEffect(() => {
     if (!connected && connectButtonRef.current) {
@@ -36,14 +40,14 @@ function VoiceControls({
     }
   }, [connected]);
 
-  // 初期化時のテストログ
+  // 初期化時のテストログ（重要なもののみ）
   useEffect(() => {
     console.log("🚀 VoiceControls コンポーネント初期化");
-    console.log("📱 UserAgent:", navigator.userAgent);
-    console.log("🌐 Location:", window.location.href);
-    console.log("🔒 Protocol:", window.location.protocol);
-    console.log("🎙️ MediaDevices対応:", !!navigator.mediaDevices);
-    console.log("🎤 getUserMedia対応:", !!navigator.mediaDevices?.getUserMedia);
+    const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
+    console.log(`📱 デバイス: ${isMobile ? 'モバイル' : 'デスクトップ'}, プロトコル: ${window.location.protocol}`);
+    if (!navigator.mediaDevices?.getUserMedia) {
+      console.error("❌ getUserMedia未対応");
+    }
   }, []);
 
   // クォータエラーの監視
@@ -76,12 +80,18 @@ function VoiceControls({
   }, [client]);
 
   useEffect(() => {
+    let dataCount = 0;
+    
     const onData = (base64: string) => {
-      console.log("📡 音声データ送信:", {
-        mimeType: "audio/pcm;rate=16000",
-        dataSize: base64.length,
-        firstChars: base64.substring(0, 20) + "..."
-      });
+      dataCount++;
+      // 10回に1回だけログ出力（重要なもののみ）
+      if (dataCount % 10 === 1) {
+        console.log(`📡 音声データ送信中... (${dataCount}回目, ${base64.length}bytes)`);
+        // VoiceChatのlog関数を使用
+        if (typeof window !== 'undefined' && (window as any).voiceChatLog) {
+          (window as any).voiceChatLog(`📡 音声データ送信中 (${dataCount}回目)`, 'audio');
+        }
+      }
       
       client.sendRealtimeInput([
         {
@@ -92,21 +102,33 @@ function VoiceControls({
     };
     
     const onVolumeChange = (volume: number) => {
-      setInVolume(volume);
-      if (onInVolume) onInVolume(volume);
-      if (volume > 0) {
-        console.log("🎤 音量検出:", volume.toFixed(3));
-      }
+      // Worklet から大量に呼ばれるのでメモリにのみ保持
+      latestVolume.current = volume;
+      // ここでは setState しない
     };
     
     if (connected && audioRecorder) {
       console.log("🔌 AudioRecorder開始処理...");
+      if (typeof window !== 'undefined' && (window as any).voiceChatLog) {
+        (window as any).voiceChatLog('🎯 [DEBUG] VoiceControls: connected=true, AudioRecorder開始処理', 'audio');
+      }
       audioRecorder.on("data", onData).on("volume", onVolumeChange);
-      audioRecorder.start().catch((error) => {
+      audioRecorder.start().then(() => {
+        console.log("✅ AudioRecorder開始成功");
+        if (typeof window !== 'undefined' && (window as any).voiceChatLog) {
+          (window as any).voiceChatLog('🎯 [DEBUG] AudioRecorder.start()成功', 'success');
+        }
+      }).catch((error) => {
         console.error("❌ AudioRecorder開始エラー:", error);
+        if (typeof window !== 'undefined' && (window as any).voiceChatLog) {
+          (window as any).voiceChatLog(`🎯 [DEBUG] AudioRecorder.start()エラー: ${error}`, 'error');
+        }
       });
     } else {
       console.log("⏹️ AudioRecorder停止処理...");
+      if (typeof window !== 'undefined' && (window as any).voiceChatLog) {
+        (window as any).voiceChatLog(`🎯 [DEBUG] VoiceControls: connected=${connected}, AudioRecorder停止処理`, 'audio');
+      }
       audioRecorder.stop();
     }
     
@@ -114,6 +136,18 @@ function VoiceControls({
       audioRecorder.off("data", onData).off("volume", onVolumeChange);
     };
   }, [connected, client, audioRecorder]);
+
+  // requestAnimationFrame で 1 フレームに 1 回だけ UI へ反映
+  useEffect(() => {
+    let rafId: number;
+    const loop = () => {
+      setInVolume(latestVolume.current);
+      if (onInVolume) onInVolume(latestVolume.current);
+      rafId = requestAnimationFrame(loop);
+    };
+    rafId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafId);
+  }, [onInVolume]);
 
   return (
     <div className="w-full">
@@ -130,23 +164,25 @@ function VoiceControls({
         </div>
       )}
 
-      {/* 接続/切断ボタンを右上に1つだけ配置 */}
-      <div className="fixed top-4 right-4 z-50 flex flex-row gap-2 items-center">
-        <Button
-          ref={connectButtonRef}
-          size="sm"
-          className={classNames(
-            "rounded-full px-4 py-2 font-bold transition-all duration-200 text-base shadow flex items-center gap-2",
-            {
-              "bg-red-500 hover:bg-red-600 text-white": connected,
-              "bg-blue-500 hover:bg-blue-600 text-white": !connected,
-            }
-          )}
-          onClick={connected ? disconnect : connect}
-        >
-          {connected ? (<><Mic size={20} /> 切断</>) : (<><MicOff size={20} /> 接続</>)}
-        </Button>
-      </div>
+      {/* 右上の接続ボタン（開発環境のみ） */}
+      {isDev && (
+        <div className="fixed top-4 right-4 z-50 flex flex-row gap-2 items-center">
+          <Button
+            ref={connectButtonRef}
+            size="sm"
+            className={classNames(
+              "rounded-full px-4 py-2 font-bold transition-all duration-200 text-base shadow flex items-center gap-2",
+              {
+                "bg-red-500 hover:bg-red-600 text-white": connected,
+                "bg-blue-500 hover:bg-blue-600 text-white": !connected,
+              }
+            )}
+            onClick={connected ? disconnect : connect}
+          >
+            {connected ? (<><Mic size={20} /> 切断</>) : (<><MicOff size={20} /> 接続</>)}
+          </Button>
+        </div>
+      )}
 
       {/* 入力音量バー（非表示） */}
       <div style={{ display: 'none' }}>

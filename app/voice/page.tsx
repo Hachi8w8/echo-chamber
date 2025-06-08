@@ -1,14 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { useResults } from "@/lib/hooks/useResults";
 import dynamic from "next/dynamic";
 
 // 音声関連のコンポーネントを動的インポートでSSR無効化
-const VoiceChat = dynamic(() => import("./VoiceChat"), {
+const VoiceChat = dynamic(() => import("@/components/feature/voice/VoiceChat"), {
   ssr: false,
   loading: () => (
     <div className="flex items-center justify-center p-8">

@@ -347,3 +347,60 @@
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateY(0);
 }
+
+@keyframes talk-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.talk-bounce {
+  animation: talk-bounce 0.8s ease-in-out infinite !important;
+}
+
+@keyframes viz-bar {
+  0%, 100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.viz-bar {
+  width: 4px;
+  height: 32px;
+  margin: 0 1px;
+  border-radius: 2px;
+  background: #e0e7ef; /* idle grey */
+  transform-origin: bottom;
+  transform: scaleY(0.55); /* idle height ~ half */
+}
+
+.viz-active {
+  background: #4caf50; /* green when active */
+  animation: viz-bar 1s ease-in-out infinite;
+  /* animation will override transform scale */
+}
+
+@keyframes intro-pop {
+  0% {
+    transform: translateY(60px) scale(0.8);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.intro-pop {
+  animation: intro-pop 0.6s ease-out 0s 1 both;
+  transform-origin: center bottom;
+}

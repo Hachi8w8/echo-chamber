@@ -16,6 +16,7 @@
     "@emotion/style": "^0.8.0",
     "@google/genai": "^0.14.0",
     "@hookform/resolvers": "^3.9.1",
+    "@lottiefiles/react-lottie-player": "^3.6.0",
     "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.1.0",
     "@radix-ui/react-accordion": "1.2.2",

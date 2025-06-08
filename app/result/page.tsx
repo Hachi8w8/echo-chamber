@@ -148,7 +148,7 @@ export default function ResultPage() {
 
           <div className="flex flex-wrap justify-center gap-4 mt-12 pb-10">
             <Button
-              onClick={() => router.push('/voice-chat')}
+              onClick={() => router.push('/voice')}
               className={`flex items-center gap-2 rounded-full px-6 py-2 ${
                 activeTab === "user" ? "bg-green-500 text-white hover:bg-green-600" : "bg-green-600 text-white hover:bg-green-700"
               }`}

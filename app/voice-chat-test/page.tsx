@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useLiveAPI } from "@/hooks/use-live-api";
+import { useLiveAPI } from "@/lib/hooks/useLiveApi";
 import { LiveClientOptions } from "@/types/voice";
-import VoiceControls from "@/components/voice/VoiceControls";
+import VoiceControls from "@/components/feature/voice/VoiceControls";
 import { LiveConnectConfig, Modality, MediaResolution } from "@google/genai";
 import { RotateCcw } from "lucide-react";
 
