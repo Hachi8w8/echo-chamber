@@ -1,10 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLiveAPI } from "@/hooks/use-live-api";
 import { LiveClientOptions } from "@/types/voice";
 import VoiceControls from "@/components/voice/VoiceControls";
 import { LiveConnectConfig, Modality } from "@google/genai";
+import Image from "next/image";
+// import VoiceVisualizer from "@/components/voice/VoiceVisualizer";
 
 const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY as string;
 if (typeof API_KEY !== "string") {
@@ -21,6 +23,13 @@ interface VoiceChatProps {
 
 export default function VoiceChat({ results }: VoiceChatProps) {
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isAITalking, setIsAITalking] = useState(false);
+  const [isBounceOnce, setIsBounceOnce] = useState(false);
+  const [isBounceFinish, setIsBounceFinish] = useState(false);
+  const [isUserSpeaking, setIsUserSpeaking] = useState(false);
+  const speakingThreshold = 0.01;
+  const speakingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const {
     client,
@@ -29,6 +38,7 @@ export default function VoiceChat({ results }: VoiceChatProps) {
     connect,
     disconnect,
     volume,
+    setModel,
   } = useLiveAPI(apiOptions);
 
   // swipe結果に基づいてAIの視点を設定
@@ -68,44 +78,104 @@ ${oppositePerspective}
         }
       };
 
+      setModel("models/gemini-2.0-flash-exp");
       setConfig(config);
       setIsInitialized(true);
     }
-  }, [results, setConfig, isInitialized]);
+  }, [results, setConfig, isInitialized, setModel]);
+
+  useEffect(() => {
+    if (!client) return;
+    const handleStart = () => {
+      setIsBounceOnce(false);
+      setIsAITalking(true);
+    };
+    const handleEnd = () => {
+      setIsAITalking(false);
+      setIsBounceOnce(true);
+      setTimeout(() => setIsBounceOnce(false), 1200); // アニメーション1周期分
+    };
+
+    client.on('audio', handleStart);
+    client.on('content', handleStart);
+    client.on('turncomplete', handleEnd);
+
+    return () => {
+      client.off('audio', handleStart);
+      client.off('content', handleStart);
+      client.off('turncomplete', handleEnd);
+    };
+  }, [client]);
+
+  useEffect(() => {
+    if (isBounceOnce) {
+      // bounce-onceが終わるタイミングでふわっと着地
+      const finishTimeout = setTimeout(() => {
+        setIsBounceFinish(true);
+        setTimeout(() => setIsBounceFinish(false), 500); // 0.5sでリセット
+      }, 1200); // bounce-onceの周期と合わせる
+      return () => clearTimeout(finishTimeout);
+    }
+  }, [isBounceOnce]);
+
+  useEffect(() => {
+    if (!videoRef.current) return;
+    if (isUserSpeaking) {
+      videoRef.current.play().catch(() => {});
+    } else {
+      videoRef.current.pause();
+    }
+  }, [isUserSpeaking]);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold mb-4">
-          異なる視点のAIと対話してみましょう
-        </h2>
-        <p className="text-gray-600 leading-relaxed">
-          あなたの思考傾向とは異なる視点を持つAIと音声で対話できます。<br />
-          「接続」ボタンを押して、マイクを有効にしてお話しください。
-        </p>
-      </div>
-
-      {/* 接続状態表示 */}
-      <div className="text-center mb-6">
-        <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
-          connected 
-            ? "bg-green-100 text-green-800" 
-            : "bg-gray-100 text-gray-600"
-        }`}>
-          <div className={`w-3 h-3 rounded-full ${
-            connected ? "bg-green-500" : "bg-gray-400"
-          }`}></div>
-          {connected ? "AIに接続中" : "未接続"}
+    <div className="flex flex-col items-center h-full w-full bg-white py-8 px-4">
+      <div className="flex-1 flex flex-col items-center justify-center w-full">
+        {/* キャラクター画像＋ビジュアライザー */}
+        <div
+          className="relative flex items-center justify-center"
+          style={{
+            width: '80vw',
+            maxWidth: 480,
+            minWidth: 160,
+            aspectRatio: '1/1',
+          }}
+        >
+          <Image
+            src="/test.png"
+            alt="AIキャラクター"
+            fill
+            className={`object-contain ${isAITalking ? "bounce-slow" : isBounceOnce ? "bounce-once" : isBounceFinish ? "bounce-finish" : ""}`}
+          />
         </div>
+        {/* ビジュアライザー動画（常に表示、画面幅に合わせて下部に寄せる） */}
+        <div className="flex flex-1 flex-col items-center justify-end w-full">
+          <video
+            ref={videoRef}
+            src="/circle-white-unscreen.mp4"
+            loop
+            muted
+            className="w-[40vw] max-w-[180px] min-w-[80px] aspect-square mb-8"
+          />
+        </div>
+        {/* <VoiceVisualizer inVolume={Math.max(inVolume, volume)} /> */}
       </div>
-
-      {/* コントロール */}
+      {/* マイクボタン（VoiceControls）を下部に */}
       <VoiceControls
         connected={connected}
         connect={connect}
         disconnect={disconnect}
         client={client}
         volume={volume}
+        onInVolume={(v) => {
+          if (v > speakingThreshold) {
+            setIsUserSpeaking(true);
+            if (speakingTimeoutRef.current) clearTimeout(speakingTimeoutRef.current);
+            speakingTimeoutRef.current = setTimeout(() => setIsUserSpeaking(false), 600);
+          } else {
+            if (speakingTimeoutRef.current) clearTimeout(speakingTimeoutRef.current);
+            speakingTimeoutRef.current = setTimeout(() => setIsUserSpeaking(false), 600);
+          }
+        }}
       />
     </div>
   );

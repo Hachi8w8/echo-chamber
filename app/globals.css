@@ -327,3 +327,23 @@
 .video-dark-theme::-webkit-media-controls-timeline {
   background-color: #00c896;
 }
+
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-30px);
+  }
+}
+.bounce-slow {
+  animation: bounce-slow 1.2s infinite ease-in-out;
+}
+.bounce-once {
+  animation: bounce-slow 1.2s 1 ease-in-out;
+}
+
+.bounce-finish {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0);
+}

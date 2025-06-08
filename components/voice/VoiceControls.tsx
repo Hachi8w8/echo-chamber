@@ -13,6 +13,7 @@ export type VoiceControlsProps = {
   disconnect: () => Promise<void>;
   client: any;
   volume: number;
+  onInVolume?: (v: number) => void;
 };
 
 function VoiceControls({
@@ -21,10 +22,10 @@ function VoiceControls({
   disconnect,
   client,
   volume,
+  onInVolume,
 }: VoiceControlsProps) {
   const [inVolume, setInVolume] = useState(0);
   const [audioRecorder] = useState(() => new AudioRecorder());
-  const [muted, setMuted] = useState(false);
   const [showDebugConsole, setShowDebugConsole] = useState(false);
   const [quotaError, setQuotaError] = useState<string | null>(null);
   const connectButtonRef = useRef<HTMLButtonElement>(null);
@@ -92,15 +93,15 @@ function VoiceControls({
     
     const onVolumeChange = (volume: number) => {
       setInVolume(volume);
+      if (onInVolume) onInVolume(volume);
       if (volume > 0) {
         console.log("🎤 音量検出:", volume.toFixed(3));
       }
     };
     
-    if (connected && !muted && audioRecorder) {
+    if (connected && audioRecorder) {
       console.log("🔌 AudioRecorder開始処理...");
       audioRecorder.on("data", onData).on("volume", onVolumeChange);
-      
       audioRecorder.start().catch((error) => {
         console.error("❌ AudioRecorder開始エラー:", error);
       });
@@ -112,13 +113,13 @@ function VoiceControls({
     return () => {
       audioRecorder.off("data", onData).off("volume", onVolumeChange);
     };
-  }, [connected, client, muted, audioRecorder]);
+  }, [connected, client, audioRecorder]);
 
   return (
-    <div className="space-y-4">
+    <div className="w-full">
       {/* クォータエラー表示 */}
       {quotaError && (
-        <div className="bg-orange-100 border border-orange-300 rounded p-2 text-sm text-orange-800">
+        <div className="bg-orange-100 border border-orange-300 rounded p-2 text-sm text-orange-800 mb-2 w-full text-center">
           ⚠️ API制限エラー: {quotaError}
           <button 
             onClick={() => setQuotaError(null)}
@@ -129,41 +130,28 @@ function VoiceControls({
         </div>
       )}
 
-      {/* デバッグコンソール開閉ボタン */}
-      <div className="text-center">
-        <Button 
-          size="sm" 
-          variant="outline"
-          onClick={() => setShowDebugConsole(!showDebugConsole)}
+      {/* 接続/切断ボタンを右上に1つだけ配置 */}
+      <div className="fixed top-4 right-4 z-50 flex flex-row gap-2 items-center">
+        <Button
+          ref={connectButtonRef}
+          size="sm"
+          className={classNames(
+            "rounded-full px-4 py-2 font-bold transition-all duration-200 text-base shadow flex items-center gap-2",
+            {
+              "bg-red-500 hover:bg-red-600 text-white": connected,
+              "bg-blue-500 hover:bg-blue-600 text-white": !connected,
+            }
+          )}
+          onClick={connected ? disconnect : connect}
         >
-          {showDebugConsole ? "コンソール閉じる" : "🔍 デバッグコンソール"}
+          {connected ? (<><Mic size={20} /> 切断</>) : (<><MicOff size={20} /> 接続</>)}
         </Button>
       </div>
 
-      <div className="flex items-center justify-center gap-4 p-6 bg-gray-50 rounded-lg">
-      {/* マイクボタン */}
-      <Button
-        variant="outline"
-        size="lg"
-        className={classNames(
-          "rounded-full p-4 transition-all duration-200",
-          {
-            "bg-red-500 hover:bg-red-600 text-white": !muted && connected,
-            "bg-gray-300 hover:bg-gray-400": muted || !connected,
-          }
-        )}
-        onClick={() => setMuted(!muted)}
-        disabled={!connected}
-      >
-        {!muted ? <Mic size={24} /> : <MicOff size={24} />}
-      </Button>
-
-      {/* 音量レベル表示 */}
-      <div className="flex items-center gap-2">
-        <div className="text-sm text-gray-600">入力音量:</div>
-        <div 
-          className="w-20 h-3 bg-gray-200 rounded-full overflow-hidden"
-        >
+      {/* 入力音量バー（非表示） */}
+      <div style={{ display: 'none' }}>
+        <div className="text-xs text-gray-500 mb-1">入力音量</div>
+        <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
           <div 
             className="h-full bg-green-500 transition-all duration-100"
             style={{ width: `${Math.min(inVolume * 500, 100)}%` }}
@@ -171,41 +159,17 @@ function VoiceControls({
         </div>
       </div>
 
-      {/* 接続ボタン */}
-      <Button
-        ref={connectButtonRef}
-        size="lg"
-        className={classNames(
-          "rounded-full px-6 py-3 font-bold transition-all duration-200",
-          {
-            "bg-red-500 hover:bg-red-600 text-white": connected,
-            "bg-blue-500 hover:bg-blue-600 text-white": !connected,
-          }
-        )}
-        onClick={connected ? disconnect : connect}
-      >
-        {connected ? "切断" : "接続"}
-      </Button>
-
-      {/* 出力音量表示 */}
-      <div className="flex items-center gap-2">
-        <div className="text-sm text-gray-600">出力音量:</div>
-        <div className="w-20 h-3 bg-gray-200 rounded-full overflow-hidden">
+      {/* 出力音量バー（非表示） */}
+      <div style={{ display: 'none' }}>
+        <div className="text-xs text-gray-500 mb-1">出力音量</div>
+        <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
           <div 
             className="h-full bg-blue-500 transition-all duration-100"
             style={{ width: `${Math.min(volume * 500, 100)}%` }}
           />
         </div>
-        {volume > 0 ? <Volume2 size={16} /> : <VolumeX size={16} />}
       </div>
     </div>
-
-    {/* デバッグコンソール */}
-    <DebugConsole 
-      isOpen={showDebugConsole}
-      onClose={() => setShowDebugConsole(false)}
-    />
-  </div>
   );
 }
 
