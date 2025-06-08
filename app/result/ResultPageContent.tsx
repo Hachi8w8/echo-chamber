@@ -7,10 +7,11 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { motion } from "framer-motion"
 import { Share2 } from "lucide-react"
-import WordCloud from "@/components/feature/word-cloud"
-import VideoPlayer from "@/components/feature/video-player"
 import KeywordModal from "@/components/feature/result/keywordModal"
 import { useResults } from "@/lib/hooks/useResults"
+import VideoPlayer from "@/components/feature/result/video-player"
+import WordCloud from "@/components/feature/result/word-cloud"
+import { AICard } from "@/components/feature/result/AICard"
 
 export default function ResultPageContent() {
   const router = useRouter()
@@ -115,6 +116,9 @@ export default function ResultPageContent() {
             <TabsContent value="user" className="space-y-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <Card className={`overflow-hidden ${secondaryBgColor} border-0`}>
+                  <a href={userVideoUrl} download className="text-blue-600 hover:underline cursor-pointer">
+                    {userVideoUrl}
+                  </a>
                   <CardContent className="p-0">
                     <VideoPlayer videoUrl={userVideoUrl} theme="light" />
                   </CardContent>
@@ -134,11 +138,13 @@ export default function ResultPageContent() {
             <TabsContent value="opposite" className="space-y-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <Card className={`overflow-hidden ${secondaryBgColor} border-0`}>
+                  <a href={oppositeVideoUrl} download className="text-blue-600 hover:underline cursor-pointer">
+                    {oppositeVideoUrl}
+                  </a>
+                  <AICard imageUrl={oppositeImageUrl} text={oppositePerspective} />
                   <CardContent className="p-0">
                     <VideoPlayer videoUrl={oppositeVideoUrl} theme="dark" />
                   </CardContent>
-                  <p className="text-white px-4 py-6 leading-7">{oppositePerspective}</p>
-                  <img src={oppositeImageUrl} alt="Opposite Perspective" className="w-full h-auto" />
                 </Card>
 
                 <Card className={`${secondaryBgColor} border-0`}>
