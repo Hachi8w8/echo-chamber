@@ -154,6 +154,7 @@ ${oppositePerspective}
             src="/circle-white-unscreen.mp4"
             loop
             muted
+            poster="/circle-white-unscreen-poster.jpg"
             className="w-[40vw] max-w-[180px] min-w-[80px] aspect-square mb-8"
           />
         </div>
