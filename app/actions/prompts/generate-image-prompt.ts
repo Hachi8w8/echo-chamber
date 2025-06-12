@@ -11,4 +11,5 @@ Follow these guidelines:
 - **Background**: Use a simple and clean background that complements the character without distracting from them.
 - **Color Palette**: Apply a color palette that matches the <Worldview Setting>.
 - **Lighting**: Apply lighting conditions that enhance the character's form and create visual interest.
+- **aspect**: 1:1
 `;
