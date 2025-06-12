@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 
 interface AICardProps {
   imageUrl?: string
@@ -11,6 +12,7 @@ export function AICard({ imageUrl, text }: AICardProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [visibleLines, setVisibleLines] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
+  const router = useRouter()
 
   // セリフのテキスト配列
   const dialogueLines = ["あなたの世界も素敵だね。", `私の世界では、${text}`, "少しだけ、話してみない？"]
@@ -130,6 +132,7 @@ export function AICard({ imageUrl, text }: AICardProps) {
             <Button
               className="flex-1 bg-gradient-to-r from-[#436DB7] via-[#5B7BC7] to-[#7B8ED7] hover:from-[#2F63BE] hover:via-[#4A6BC0] hover:to-[#6B7EC8] text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-white/20"
               size="lg"
+              onClick={() => router.push('/voice')}
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >

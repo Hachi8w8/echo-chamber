@@ -51,7 +51,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <div className="grid grid-rows-[auto_1fr] h-full">
             <Navigation />
-            <main>{children}</main>
+            <main className="h-full">{children}</main>
           </div>
         </ThemeProvider>
       </body>
