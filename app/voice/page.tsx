@@ -38,7 +38,7 @@ export default function VoiceChatPage() {
   return (
     <div className="h-full overflow-y-auto">
       {/* メインコンテンツ */}
-      <VoiceChat results={results} />
+      <VoiceChat results={results} onBackToResults={() => router.push('/result')} />
     </div>
   );
 } 
