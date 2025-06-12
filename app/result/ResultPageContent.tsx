@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -15,10 +15,13 @@ import { AICard } from "@/components/feature/result/AICard"
 
 export default function ResultPageContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [selectedKeyword, setSelectedKeyword] = useState<any>(null)
   const [activeTab, setActiveTab] = useState("opposite")
   // 結果の取得
   const { data } = useResults()
+  const fromVoice = searchParams?.get("from") === "voice"
+
   console.log("ローカルからのデータ", data)
 
   let theme = ""
@@ -116,9 +119,14 @@ export default function ResultPageContent() {
             <TabsContent value="user" className="space-y-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <Card className={`overflow-hidden ${secondaryBgColor} border-0`}>
-                  <a href={userVideoUrl} download className="text-blue-600 hover:underline cursor-pointer">
-                    {userVideoUrl}
-                  </a>
+                  {/* 音声対話完了後のみダウンロードリンクを表示 */}
+                  {fromVoice && userVideoUrl && (
+                    <div className="p-4 bg-blue-50 border-b">
+                      <a href={userVideoUrl} download className="text-blue-600 hover:underline cursor-pointer">
+                        あなたの視点の動画をダウンロード
+                      </a>
+                    </div>
+                  )}
                   <CardContent className="p-0">
                     <VideoPlayer videoUrl={userVideoUrl} theme="light" />
                   </CardContent>
@@ -138,13 +146,18 @@ export default function ResultPageContent() {
             <TabsContent value="opposite" className="space-y-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <Card className={`overflow-hidden ${secondaryBgColor} border-0`}>
-                  <a href={oppositeVideoUrl} download className="text-blue-600 hover:underline cursor-pointer">
-                    {oppositeVideoUrl}
-                  </a>
-                  <AICard imageUrl={oppositeImageUrl} text={oppositePerspective} />
+                  {/* 音声対話完了後のみダウンロードリンクを表示 */}
+                  {fromVoice && oppositeVideoUrl && (
+                    <div className="p-4 bg-blue-50 border-b">
+                      <a href={oppositeVideoUrl} download className="text-blue-600 hover:underline cursor-pointer">
+                        異なる視点の動画をダウンロード
+                      </a>
+                    </div>
+                  )}
                   <CardContent className="p-0">
                     <VideoPlayer videoUrl={oppositeVideoUrl} theme="dark" />
                   </CardContent>
+                  {!fromVoice && oppositeVideoUrl && <AICard imageUrl={oppositeImageUrl} text={oppositePerspective} />}
                 </Card>
 
                 <Card className={`${secondaryBgColor} border-0`}>

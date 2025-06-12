@@ -12,10 +12,11 @@ export function AICard({ imageUrl, text }: AICardProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [visibleLines, setVisibleLines] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
+  const [showAvatar, setShowAvatar] = useState(false)
   const router = useRouter()
 
   // セリフのテキスト配列
-  const dialogueLines = ["あなたの世界も素敵だね。", `私の世界では、${text}`, "少しだけ、話してみない？"]
+  const dialogueLines = [`${text}`, "少しだけ、話してみない？"]
 
   // アニメーション開始
   const startAnimation = () => {
@@ -40,18 +41,18 @@ export function AICard({ imageUrl, text }: AICardProps) {
     }, 500) // 0.5秒後に開始
 
     return () => clearTimeout(timer)
-  }, [text]) // textが変わったら再アニメーション
+  }, [text])
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowAvatar(true), 800) // 0.8秒遅延
+    return () => clearTimeout(timer)
+  }, [imageUrl])
 
   return (
     <div className="w-full max-w-md mx-auto my-8">
       <Card className="bg-gradient-to-b p-6 md:p-8 from-[#FCF8F2] to-[#FFF8EC] border-0 shadow-lg">
         <h2 className="text-center text-xl sm:text-2xl font-bold text-gray-800 mb-4">ちがう星から来た、あなたへ</h2>
-        <p className="text-gray-600 mb-4 sm:mb-8 text-center text-sm sm:text-lg">
-          あなたの価値観に、
-          <br />
-          そっと触れたい存在がいます。
-        </p>
-        <CardContent className="p-6 text-center bg-white rounded-lg shadow-md">
+        <CardContent className="p-5 text-center bg-white rounded-lg shadow-md">
           {/* アバター */}
           <div className="mb-6 relative">
             <div
@@ -60,19 +61,16 @@ export function AICard({ imageUrl, text }: AICardProps) {
                 animation: `gentle-float 3s ease-in-out infinite, soft-glow 2s ease-in-out infinite alternate`,
               }}
             >
-              {/* 光る輪っか */}
-              <div
-                className="absolute inset-0 rounded-full bg-gradient-to-r from-gray-950 to-purple-950 opacity-20 animate-spin"
-                style={{ animationDuration: "8s" }}
-              ></div>
-
               {/* アバター画像 */}
               <div className="w-36 h-36 rounded-full overflow-hidden shadow-md relative z-10">
-                <img
-                  src={imageUrl || "/api/images/sample1.png"}
-                  alt="AI生成アバター"
-                  className="w-full h-full object-cover transition-all duration-500 hover:scale-125"
-                />
+                {showAvatar && (
+                  <img
+                    src={imageUrl || "/api/images/sample1.png"}
+                    alt="AI生成アバター"
+                    className="w-full h-full object-cover transition-all duration-500 hover:scale-125 animate-fade-in"
+                    style={{ animation: "fade-in 0.7s forwards" }}
+                  />
+                )}
               </div>
 
               {/* キラキラエフェクト */}
@@ -132,7 +130,7 @@ export function AICard({ imageUrl, text }: AICardProps) {
             <Button
               className="flex-1 bg-gradient-to-r from-[#436DB7] via-[#5B7BC7] to-[#7B8ED7] hover:from-[#2F63BE] hover:via-[#4A6BC0] hover:to-[#6B7EC8] text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-white/20"
               size="lg"
-              onClick={() => router.push('/voice')}
+              onClick={() => router.push("/voice")}
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
@@ -142,6 +140,7 @@ export function AICard({ imageUrl, text }: AICardProps) {
               </span>
             </Button>
           </div>
+          <p className="text-gray-600 mt-3 text-center text-xs sm:text-base">🎞️ AIと対話すると、動画がDLできるよ 🎞️</p>
         </CardContent>
       </Card>
 
@@ -162,6 +161,17 @@ export function AICard({ imageUrl, text }: AICardProps) {
           }
           100% {
             box-shadow: 0 0 30px rgba(123, 142, 215, 0.5);
+          }
+        }
+
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(10px) scale(1.3);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
           }
         }
       `}</style>
