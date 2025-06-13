@@ -3,6 +3,18 @@
 import { imageGenerationClient } from '../../lib/vertex-ai/image';
 import { AppConfig } from '../../lib/app-config';
 import { generateImagePromptTemplate } from './prompts/generate-image-prompt';
+import voiceNames from './constants/voice-names.json';
+
+/**
+ * 性別に応じてランダムに音声名を選択する
+ * @param gender 性別
+ * @returns ランダムに選択された音声名
+ */
+function getRandomVoiceName(gender: 'female' | 'male'): string {
+  const names = voiceNames[gender];
+  const randomIndex = Math.floor(Math.random() * names.length);
+  return names[randomIndex];
+}
 
 /**
  * 画像生成レスポンスの型定義
@@ -11,6 +23,7 @@ export type GenerateImageResponse = {
   imageDataUrl: string;
   text?: string;
   gender: 'female' | 'male';
+  voiceName: string;
 };
 
 /**
@@ -52,9 +65,7 @@ export async function generateImage(
       // パスからファイル名を抽出し、APIルートのパスを生成
       const filename = result.imagePath.split('/').pop();
       imageDataUrl = `/api/images/${filename}`;      text = result.text; // テキストがある場合は取得 
-    }
-
-    // テキストから性別を判定
+    }    // テキストから性別を判定
     let gender: 'female' | 'male' = 'male'; // デフォルトは male
     if (text) {
       const lowerText = text.toLowerCase();
@@ -63,13 +74,17 @@ export async function generateImage(
       }
       // male が含まれている場合は既にデフォルトが male なのでそのまま
     }
+
+    // 性別に応じて音声名をランダムに選択
+    const voiceName = getRandomVoiceName(gender);
        
-    console.log(`【画像生成】OUTPUT: 画像生成完了, imageDataUrl: ${imageDataUrl}${text ? `, テキスト: ${text}` : ''}, 性別: ${gender}`);
+    console.log(`【画像生成】OUTPUT: 画像生成完了, imageDataUrl: ${imageDataUrl}${text ? `, テキスト: ${text}` : ''}, 性別: ${gender}, 音声名: ${voiceName}`);
 
     // レスポンスオブジェクトを作成
     const response: GenerateImageResponse = {
       imageDataUrl,
       gender,
+      voiceName,
       ...(text && { text })
     };
 

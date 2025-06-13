@@ -60,6 +60,7 @@ export default function ApiTestForm() {
   const [geminiImageDataUrl, setGeminiImageDataUrl] = useState<string>('');
   const [geminiImageText, setGeminiImageText] = useState<string>('');
   const [geminiImageGender, setGeminiImageGender] = useState<'female' | 'male'>('male');
+  const [geminiImageVoiceName, setGeminiImageVoiceName] = useState<string>('');
   
   // 共通の状態
   const [error, setError] = useState<string>('');
@@ -206,6 +207,7 @@ export default function ApiTestForm() {
     setGeminiImageDataUrl('');
     setGeminiImageText('');
     setGeminiImageGender('male');
+    setGeminiImageVoiceName('');
 
     try {
       const response = await generateImage(geminiImagePrompt);
@@ -214,6 +216,7 @@ export default function ApiTestForm() {
       } else {
         setGeminiImageDataUrl(response.imageDataUrl);
         setGeminiImageGender(response.gender);
+        setGeminiImageVoiceName(response.voiceName);
         if (response.text) {
           setGeminiImageText(response.text);
         }
@@ -676,13 +679,18 @@ export default function ApiTestForm() {
                 alt="Gemini generated image"
                 className="w-full h-auto rounded"
                 style={{ maxWidth: '400px' }}
-              />              <p className="text-sm text-gray-600 mt-2">生成された画像</p>
-              <div className="mt-3 p-3 bg-gray-50 rounded">
+              />              <p className="text-sm text-gray-600 mt-2">生成された画像</p>              <div className="mt-3 p-3 bg-gray-50 rounded">
                 <h4 className="text-sm font-semibold mb-1">判定された性別:</h4>
                 <p className="text-sm">
                   {geminiImageGender === 'female' ? '女性 (female)' : '男性 (male)'}
                 </p>
               </div>
+              {geminiImageVoiceName && (
+                <div className="mt-3 p-3 bg-gray-50 rounded">
+                  <h4 className="text-sm font-semibold mb-1">選択された音声名:</h4>
+                  <p className="text-sm">{geminiImageVoiceName}</p>
+                </div>
+              )}
               {geminiImageText && (
                 <div className="mt-3 p-3 bg-gray-50 rounded">
                   <h4 className="text-sm font-semibold mb-1">生成されたテキスト:</h4>
