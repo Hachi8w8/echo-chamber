@@ -55,10 +55,11 @@ export default function ApiTestForm() {
     // 動画生成用の状態
   const [prompt, setPrompt] = useState(`A whimsical 3D world floating in soft pink and lavender skies, with several cozy floating islands connected by glowing heart-shaped bridges. Each island represents a different aspect of family values. One island shows two characters far apart, yet connected by a glowing thread of light between their hearts. Another has a picnic scene where everyone is sitting freely, without fixed seats or roles, enjoying each other's presence. A third island has a giant ear-shaped sculpture surrounded by bubbles with dialogue icons, symbolizing listening and conversation. One area displays a playful, upside-down house with a sign that says "normal?"—questioning traditional ideas of family. The whole world is surrounded by floating pillows, blankets, and twinkling stars, creating a warm, relaxed atmosphere. No harsh lines, everything is soft, round, and magical.`);
   const [videoLength, setVideoLength] = useState('5');  const [aspectRatio, setAspectRatio] = useState('16:9');
-  const [videoPath, setVideoPath] = useState<string>('');    // Gemini画像生成用の状態
+  const [videoPath, setVideoPath] = useState<string>('');  // Gemini画像生成用の状態
   const [geminiImagePrompt, setGeminiImagePrompt] = useState('A futuristic cityscape at sunset with flying cars and neon lights');
   const [geminiImageDataUrl, setGeminiImageDataUrl] = useState<string>('');
   const [geminiImageText, setGeminiImageText] = useState<string>('');
+  const [geminiImageGender, setGeminiImageGender] = useState<'female' | 'male'>('male');
   
   // 共通の状態
   const [error, setError] = useState<string>('');
@@ -204,6 +205,7 @@ export default function ApiTestForm() {
     setError('');
     setGeminiImageDataUrl('');
     setGeminiImageText('');
+    setGeminiImageGender('male');
 
     try {
       const response = await generateImage(geminiImagePrompt);
@@ -211,6 +213,7 @@ export default function ApiTestForm() {
         setError(response.error);
       } else {
         setGeminiImageDataUrl(response.imageDataUrl);
+        setGeminiImageGender(response.gender);
         if (response.text) {
           setGeminiImageText(response.text);
         }
@@ -673,8 +676,13 @@ export default function ApiTestForm() {
                 alt="Gemini generated image"
                 className="w-full h-auto rounded"
                 style={{ maxWidth: '400px' }}
-              />
-              <p className="text-sm text-gray-600 mt-2">生成された画像</p>
+              />              <p className="text-sm text-gray-600 mt-2">生成された画像</p>
+              <div className="mt-3 p-3 bg-gray-50 rounded">
+                <h4 className="text-sm font-semibold mb-1">判定された性別:</h4>
+                <p className="text-sm">
+                  {geminiImageGender === 'female' ? '女性 (female)' : '男性 (male)'}
+                </p>
+              </div>
               {geminiImageText && (
                 <div className="mt-3 p-3 bg-gray-50 rounded">
                   <h4 className="text-sm font-semibold mb-1">生成されたテキスト:</h4>

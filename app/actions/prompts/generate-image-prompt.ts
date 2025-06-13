@@ -12,4 +12,5 @@ Follow these guidelines:
 - **Color Palette**: Apply a color palette that matches the <Worldview Setting>.
 - **Lighting**: Apply lighting conditions that enhance the character's form and create visual interest.
 - **aspect**: 1:1
+- **Character's Voice**: Specify whether the character's voice is male or female.
 `;

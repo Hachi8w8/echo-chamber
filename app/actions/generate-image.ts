@@ -10,12 +10,13 @@ import { generateImagePromptTemplate } from './prompts/generate-image-prompt';
 export type GenerateImageResponse = {
   imageDataUrl: string;
   text?: string;
+  gender: 'female' | 'male';
 };
 
 /**
  * 画像を生成するServer Action
  * @param worldviewDescription [必須] 世界観の説明
- * @returns 画像のデータURLとテキスト（存在する場合）
+ * @returns 画像のデータURLとテキスト（存在する場合）、性別
  */
 export async function generateImage(
   worldviewDescription: string
@@ -50,15 +51,25 @@ export async function generateImage(
       
       // パスからファイル名を抽出し、APIルートのパスを生成
       const filename = result.imagePath.split('/').pop();
-      imageDataUrl = `/api/images/${filename}`;
-      text = result.text; // テキストがある場合は取得 
+      imageDataUrl = `/api/images/${filename}`;      text = result.text; // テキストがある場合は取得 
+    }
+
+    // テキストから性別を判定
+    let gender: 'female' | 'male' = 'male'; // デフォルトは male
+    if (text) {
+      const lowerText = text.toLowerCase();
+      if (lowerText.includes('female')) {
+        gender = 'female';
+      }
+      // male が含まれている場合は既にデフォルトが male なのでそのまま
     }
        
-    console.log(`【画像生成】OUTPUT: 画像生成完了, imageDataUrl: ${imageDataUrl}${text ? `, テキスト: ${text}` : ''}`);
+    console.log(`【画像生成】OUTPUT: 画像生成完了, imageDataUrl: ${imageDataUrl}${text ? `, テキスト: ${text}` : ''}, 性別: ${gender}`);
 
     // レスポンスオブジェクトを作成
     const response: GenerateImageResponse = {
       imageDataUrl,
+      gender,
       ...(text && { text })
     };
 
