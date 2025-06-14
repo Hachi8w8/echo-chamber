@@ -11,7 +11,8 @@ import { useVoiceTimer } from "@/lib/hooks/useVoiceTimer";
 import TimerDisplay from "@/components/feature/voice/TimerDisplay";
 import AvatarSection from "@/components/feature/voice/AvatarSection";
 import MicButton from "@/components/feature/voice/MicButton";
-import { isDev } from "@/lib/env";
+// 開発モード判定（.env で NEXT_PUBLIC_IS_DEV=true に設定）
+const isDev = process.env.NEXT_PUBLIC_IS_DEV === "true";
 
 const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY as string;
 if (typeof API_KEY !== "string") {
