@@ -6,7 +6,9 @@ import { Mic, MicOff } from "lucide-react";
 import { AudioRecorder } from "@/lib/voice/audio-recorder";
 import DebugConsole from "./DebugConsole";
 import classNames from "classnames";
-import { isDev } from "@/lib/env";
+
+// 開発モード判定（.env で NEXT_PUBLIC_IS_DEV=true に設定）
+const isDev = process.env.NEXT_PUBLIC_IS_DEV === "true";
 
 export type VoiceControlsProps = {
   connected: boolean;

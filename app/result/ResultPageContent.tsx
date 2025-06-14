@@ -41,6 +41,8 @@ export default function ResultPageContent() {
   const oppositeKeywords = data?.opposite?.keywords || []
   const userImageUrl = data?.user?.imageUrl || ""
   const oppositeImageUrl = data?.opposite?.imageUrl || ""
+  const voiceName = data?.opposite?.voiceName || ""
+  const gender = data?.opposite?.gender || ""
 
   // タブに応じたスタイルを設定
   const bgColor = activeTab === "user" ? "bg-gray-100" : "bg-gray-900"
@@ -119,13 +121,37 @@ export default function ResultPageContent() {
             <TabsContent value="user" className="space-y-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <Card className={`overflow-hidden ${secondaryBgColor} border-0`}>
-                  {/* 音声対話完了後のみダウンロードリンクを表示 */}
+                  {/* 音声対話完了後にあなたの視点のダウンロードボタンを表示 */}
                   {fromVoice && userVideoUrl && (
-                    <div className="p-4 bg-blue-50 border-b">
-                      <a href={userVideoUrl} download className="text-blue-600 hover:underline cursor-pointer">
-                        あなたの視点の動画をダウンロード
-                      </a>
-                    </div>
+                    <>
+                      {/* パターン2: ネオンエフェクト風 */}
+                      <div className="p-4 flex justify-center bg-gray-800">
+                        <a
+                          href={userVideoUrl}
+                          download
+                          className="relative inline-flex items-center gap-3 px-8 py-4 bg-gray-900 border-2 border-[#ffba08] text-[#ffba08] font-bold text-lg rounded-xl cursor-pointer group transition-all duration-300 hover:bg-[#ffba08] hover:text-gray-800 hover:shadow-[0_0_30px_#ffba08]"
+                          style={{
+                            boxShadow: "0 0 20px rgba(255, 186, 8, 0.5), inset 0 0 20px rgba(255, 186, 8, 0.1)",
+                          }}
+                        >
+                          <svg
+                            className="w-6 h-6 group-hover:rotate-180 transition-transform duration-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
+                            />
+                          </svg>
+
+                          <span>あなたの視点の動画をダウンロード</span>
+                        </a>
+                      </div>
+                    </>
                   )}
                   <CardContent className="p-0">
                     <VideoPlayer videoUrl={userVideoUrl} theme="light" />
@@ -146,18 +172,49 @@ export default function ResultPageContent() {
             <TabsContent value="opposite" className="space-y-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <Card className={`overflow-hidden ${secondaryBgColor} border-0`}>
-                  {/* 音声対話完了後のみダウンロードリンクを表示 */}
+                  {/* 音声対話完了後に異なる視点のダウンロードボタンを表示 */}
                   {fromVoice && oppositeVideoUrl && (
-                    <div className="p-4 bg-blue-50 border-b">
-                      <a href={oppositeVideoUrl} download className="text-blue-600 hover:underline cursor-pointer">
-                        異なる視点の動画をダウンロード
-                      </a>
-                    </div>
+                    <>
+                      {/* パターン2: ネオンエフェクト風 */}
+                      <div className="p-4 bg-transparent flex justify-center">
+                        <a
+                          href={oppositeVideoUrl}
+                          download
+                          className="relative inline-flex items-center gap-3 px-8 py-4 bg-black border-2 border-[#00c896] text-[#00c896] font-bold text-lg rounded-xl cursor-pointer group transition-all duration-300 hover:bg-[#00c896] hover:text-black hover:shadow-[0_0_30px_#4ade80]"
+                          style={{
+                            boxShadow: "0 0 20px rgba(74, 222, 128, 0.5), inset 0 0 20px rgba(74, 222, 128, 0.1)",
+                          }}
+                        >
+                          <svg
+                            className="w-6 h-6 group-hover:rotate-180 transition-transform duration-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
+                            />
+                          </svg>
+
+                          <span>異なる視点の動画をダウンロード</span>
+                        </a>
+                      </div>
+                    </>
                   )}
                   <CardContent className="p-0">
                     <VideoPlayer videoUrl={oppositeVideoUrl} theme="dark" />
                   </CardContent>
-                  {!fromVoice && oppositeVideoUrl && <AICard imageUrl={oppositeImageUrl} text={oppositePerspective} />}
+                  {!fromVoice && oppositeVideoUrl && (
+                    <AICard
+                      imageUrl={oppositeImageUrl}
+                      text={oppositePerspective}
+                      gender={gender === "female" || gender === "male" ? gender : "female"}
+                      voiceName={voiceName}
+                    />
+                  )}
                 </Card>
 
                 <Card className={`${secondaryBgColor} border-0`}>
