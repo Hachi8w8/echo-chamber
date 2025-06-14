@@ -6,9 +6,10 @@ import { useRouter } from "next/navigation"
 interface AICardProps {
   imageUrl?: string
   text?: string
+  voiceName?: string
 }
 
-export function AICard({ imageUrl, text }: AICardProps) {
+export function AICard({ imageUrl, text, voiceName }: AICardProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [visibleLines, setVisibleLines] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
@@ -136,6 +137,7 @@ export function AICard({ imageUrl, text }: AICardProps) {
             >
               <span className="flex items-center justify-center gap-2">
                 {isHovered ? "🚀" : "💭"}
+                {/* <span className="transition-all duration-300">{voiceName && `${voiceName}と`}1分だけ話してみる</span> */}
                 <span className="transition-all duration-300">1分だけ話してみる</span>
               </span>
             </Button>
