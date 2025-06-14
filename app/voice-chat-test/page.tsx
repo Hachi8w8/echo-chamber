@@ -21,6 +21,8 @@ export default function VoicePromptTestPage() {
     timeup: "",
     end: "",
   });
+  const voiceOptions = ["Puck","Charon","Kore","Fenrir","Aoede","Leda","Orus","Zephyr"] as const;
+  const [voiceName,setVoiceName] = useState<typeof voiceOptions[number]>("Puck");
 
   const {
     client,
@@ -42,7 +44,10 @@ export default function VoicePromptTestPage() {
 
     const config: LiveConnectConfig = {
       responseModalities: [Modality.AUDIO],
-      speechConfig: { languageCode: "ja-JP" },
+      speechConfig: {
+        languageCode: "ja-JP",
+        voiceConfig: { prebuiltVoiceConfig: { voiceName } },
+      },
       systemInstruction: { parts: [{ text: prompts.system }] },
     };
     try {
@@ -113,6 +118,19 @@ export default function VoicePromptTestPage() {
           </Button>
         </div>
       ))}
+
+      {/* 音声（VoiceName）選択 */}
+      <div>
+        <label className="font-semibold">音声（Voice Name）</label>
+        <select
+          className="mt-1 w-full border rounded-md p-2 text-sm bg-white"
+          value={voiceName}
+          onChange={(e)=>setVoiceName(e.target.value as typeof voiceOptions[number])}
+          disabled={connected}
+        >
+          {voiceOptions.map(v=>(<option key={v} value={v}>{v}</option>))}
+        </select>
+      </div>
 
       {/* 接続制御 */}
       <div className="flex gap-2">
