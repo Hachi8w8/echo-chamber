@@ -12,12 +12,18 @@ type GeneratePerspectiveResponse = {
     perspective: string;
     videoUrl: string;
     imageUrl: string;
+    gender: 'female' | 'male';
+    text?: string
+    voiceName?: string;
   };
   opposite: {
     keywords: string[];
     perspective: string;
     videoUrl: string;
     imageUrl: string;
+    gender: 'female' | 'male';
+    text?: string
+    voiceName?: string;
   };
 };
 
@@ -55,6 +61,9 @@ export async function generatePerspective(
       return {
         videoUrl: videoResult.videoPath,
         imageUrl: imageResult.imageDataUrl,
+        gender: imageResult.gender,
+        text: imageResult.text,
+        voiceName: imageResult.voiceName,
       };
     };
 
@@ -81,12 +90,18 @@ export async function generatePerspective(
         perspective: userKeywordsResult.perspective,
         videoUrl: userMediaResult.videoUrl,
         imageUrl: userMediaResult.imageUrl,
+        gender: userMediaResult.gender,
+        text: userMediaResult.text,
+        voiceName: userMediaResult.voiceName,
       },
       opposite: {
         keywords: oppositeKeywordsResult.keywords,
         perspective: oppositeKeywordsResult.perspective,
         videoUrl: oppositeMediaResult.videoUrl,
         imageUrl: oppositeMediaResult.imageUrl,
+        gender: oppositeMediaResult.gender,
+        text: oppositeMediaResult.text,
+        voiceName: oppositeMediaResult.voiceName,
       },
     };
   } catch (error) {

@@ -41,6 +41,7 @@ export default function ResultPageContent() {
   const oppositeKeywords = data?.opposite?.keywords || []
   const userImageUrl = data?.user?.imageUrl || ""
   const oppositeImageUrl = data?.opposite?.imageUrl || ""
+  const voiceName = data?.opposite?.voiceName || ""
 
   // タブに応じたスタイルを設定
   const bgColor = activeTab === "user" ? "bg-gray-100" : "bg-gray-900"
@@ -157,7 +158,7 @@ export default function ResultPageContent() {
                   <CardContent className="p-0">
                     <VideoPlayer videoUrl={oppositeVideoUrl} theme="dark" />
                   </CardContent>
-                  {!fromVoice && oppositeVideoUrl && <AICard imageUrl={oppositeImageUrl} text={oppositePerspective} />}
+                  {!fromVoice && oppositeVideoUrl && <AICard imageUrl={oppositeImageUrl} text={oppositePerspective} voiceName={voiceName}/>}
                 </Card>
 
                 <Card className={`${secondaryBgColor} border-0`}>

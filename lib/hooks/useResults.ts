@@ -6,6 +6,7 @@ type ResultData = {
   perspective: string
   videoUrl: string
   imageUrl: string
+  voiceName: string
 }
 
 type Results = {
