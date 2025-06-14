@@ -42,7 +42,6 @@ export default function ResultPageContent() {
   const userImageUrl = data?.user?.imageUrl || ""
   const oppositeImageUrl = data?.opposite?.imageUrl || ""
   const voiceName = data?.opposite?.voiceName || ""
-  const gender = data?.opposite?.gender || ""
 
   // タブに応じたスタイルを設定
   const bgColor = activeTab === "user" ? "bg-gray-100" : "bg-gray-900"
@@ -211,7 +210,6 @@ export default function ResultPageContent() {
                     <AICard
                       imageUrl={oppositeImageUrl}
                       text={oppositePerspective}
-                      gender={gender === "female" || gender === "male" ? gender : "female"}
                       voiceName={voiceName}
                     />
                   )}
