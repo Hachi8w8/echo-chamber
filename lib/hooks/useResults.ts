@@ -7,6 +7,7 @@ type ResultData = {
   videoUrl: string
   imageUrl: string
   voiceName: string
+  gender: string
 }
 
 type Results = {
