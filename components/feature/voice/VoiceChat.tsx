@@ -115,52 +115,17 @@ export default function VoiceChat({ results, onBackToResults }: VoiceChatProps) 
       setIsAITalking(false);
     };
 
-    const handleSetupComplete = () => {
-      log('Live APIセットアップ完了 (setupcomplete)', 'api');
-      
-      // **根本解決: setupcomplete後にAIメッセージ送信**
-      if (hasStartedRef.current) {
-        log('🎯 [DEBUG] setupcompleteでAIメッセージ送信開始', 'api');
-        setTimeout(() => {
-          if (client && typeof client.send === "function") {
-            const startMessage = { text: START_MESSAGE };
-            log(`AIに開始メッセージ送信: ${JSON.stringify(startMessage)}`, 'api');
-            try {
-              client.send(startMessage);
-              log('🎯 [DEBUG] setupcomplete経由でclient.send()成功', 'success');
-            } catch (sendError) {
-              log(`🎯 [DEBUG] setupcomplete経由でclient.send()エラー: ${sendError}`, 'error');
-            }
-          }
-        }, 500); // setupcomplete後少し待つ
-      }
-    };
-
     const handleAudio = (data: ArrayBuffer) => {
       // AI音声データ受信時、AIが話しているとみなす
       setIsAITalking(true);
     };
 
-    const handleContent = (data: any) => {
-      // log(`AIコンテンツ受信: ${JSON.stringify(data).substring(0, 100)}...`, 'api');
-    };
-
-    const handleToolCall = (data: any) => {
-      log(`ツール呼び出し: ${JSON.stringify(data)}`, 'api');
-    };
-
     client.on('turncomplete', handleTurnComplete);
-    client.on('setupcomplete', handleSetupComplete);
     client.on('audio', handleAudio);
-    client.on('content', handleContent);
-    client.on('toolcall', handleToolCall);
 
     return () => {
       client.off('turncomplete', handleTurnComplete);
-      client.off('setupcomplete', handleSetupComplete);
       client.off('audio', handleAudio);
-      client.off('content', handleContent);
-      client.off('toolcall', handleToolCall);
     };
   }, [client]);
 
@@ -169,6 +134,9 @@ export default function VoiceChat({ results, onBackToResults }: VoiceChatProps) 
     if (results && !isInitialized) {
       const userPerspective = results.user?.perspective || "";
       const oppositePerspective = results.opposite?.perspective || "";
+      // voiceName を localStorage (results.opposite.voiceName) から取得。無ければデフォルト "Aoede"
+      const oppositeVoiceName = results.opposite?.voiceName || "Aoede";
+
       const systemPrompt = SYSTEM_PROMPT
         .replace("{{userPerspective}}", userPerspective)
         .replace("{{oppositePerspective}}", oppositePerspective);
@@ -178,7 +146,7 @@ export default function VoiceChat({ results, onBackToResults }: VoiceChatProps) 
           languageCode: "ja-JP",
           voiceConfig: {
             prebuiltVoiceConfig: {
-              voiceName: "Aoede"
+              voiceName: oppositeVoiceName
             }
           }
         },
@@ -239,6 +207,19 @@ export default function VoiceChat({ results, onBackToResults }: VoiceChatProps) 
         log('Live API接続開始...', 'api');
         await connect(); // 接続（音声権限取得）
         log('🎯 [DEBUG] connect()完了', 'success');
+
+        // ★ 変更: 接続直後にAI開始メッセージを送信 ★
+        if (client && typeof client.send === "function") {
+          const startMessage = { text: START_MESSAGE };
+          log(`AIに開始メッセージ即送信: ${JSON.stringify(startMessage)}`, 'api');
+          try {
+            client.send(startMessage);
+            log('🎯 [DEBUG] client.send()成功', 'success');
+          } catch (sendError) {
+            log(`🎯 [DEBUG] client.send()エラー: ${sendError}`, 'error');
+          }
+        }
+
         log('Live API接続成功、チャット開始', 'api');
         setChatPhase('chatting'); // タイマー表示に切り替え
         hasStartedRef.current = true;
